@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DevExtreme.AspNet.Core" Version="23.1.7" />
+    <PackageReference Include="DevExtreme.AspNet.Data" Version="2.9.2" />
+    <PackageReference Include="Finbuckle.MultiTenant.AspNetCore" Version="9.2.2" />
+    <PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="9.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="9.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IKARUSWEB.Application\IKARUSWEB.Application.csproj" />
+    <ProjectReference Include="..\IKARUSWEB.Domain\IKARUSWEB.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
