@@ -10,7 +10,6 @@ namespace IKARUSWEB.Domain.Abstractions
     {
         public Guid Id { get; protected set; } = Guid.NewGuid();
 
-        // Soft-delete & audit
         public bool IsActive { get; protected set; } = true;
         public bool IsDeleted { get; protected set; } = false;
 
@@ -23,19 +22,28 @@ namespace IKARUSWEB.Domain.Abstractions
         public string? DeletedBy { get; protected set; }
         public DateTime? DeletedAt { get; protected set; }
 
-        public void MarkDeleted(string? by = null)
+        public void MarkCreated(string? by = null, DateTime? now = null)
+        {
+            IsActive = true;
+            IsDeleted = false;
+            CreatedBy = by;
+            CreatedAt = now ?? DateTime.UtcNow;
+        }
+
+        public void Touch(string? by = null, DateTime? now = null)
+        {
+            ModifiedBy = by;
+            ModifiedAt = now ?? DateTime.UtcNow;
+        }
+
+        public void MarkDeleted(string? by = null, DateTime? now = null)
         {
             if (IsDeleted) return;
             IsDeleted = true;
             IsActive = false;
             DeletedBy = by;
-            DeletedAt = DateTime.UtcNow;
-        }
-
-        public void Touch(string? by = null)
-        {
-            ModifiedBy = by;
-            ModifiedAt = DateTime.UtcNow;
+            DeletedAt = now ?? DateTime.UtcNow;
         }
     }
+
 }

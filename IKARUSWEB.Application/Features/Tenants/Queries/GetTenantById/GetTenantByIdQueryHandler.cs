@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IKARUSWEB.Application.Abstractions;
+using IKARUSWEB.Application.Abstractions.Repositories;
 using IKARUSWEB.Application.Common.Results;
 using IKARUSWEB.Application.Mapping;
 using IKARUSWEB.Domain.Entities;
@@ -14,22 +15,21 @@ namespace IKARUSWEB.Application.Features.Tenants.Queries.GetTenantById
 {
     public sealed class GetTenantByIdQueryHandler : IRequestHandler<GetTenantByIdQuery, Result<TenantDto>>
     {
-        private readonly IAppDbContext _db;
+        private readonly ITenantRepository _repo;
         private readonly IMapper _mapper;
 
-        public GetTenantByIdQueryHandler(IAppDbContext db, IMapper mapper)
+        public GetTenantByIdQueryHandler(ITenantRepository repo, IMapper mapper)
         {
-            _db = db;
+            _repo = repo;
             _mapper = mapper;
         }
 
         public async Task<Result<TenantDto>> Handle(GetTenantByIdQuery request, CancellationToken ct)
         {
-            var entity = await _db.FindAsync<Tenant>(request.Id, ct);
+            var entity = await _repo.GetByIdAsync(request.Id, ct);
             if (entity is null) return Result<TenantDto>.Failure("Tenant not found.");
 
-            var dto = _mapper.Map<TenantDto>(entity);
-            return Result<TenantDto>.Success(dto);
+            return Result<TenantDto>.Success(_mapper.Map<TenantDto>(entity));
         }
     }
 }
