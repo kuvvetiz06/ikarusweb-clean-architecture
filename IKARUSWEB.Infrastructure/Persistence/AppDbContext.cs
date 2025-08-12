@@ -1,13 +1,16 @@
 ﻿using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Domain.Abstractions;
 using IKARUSWEB.Domain.Entities;
+using IKARUSWEB.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 
 namespace IKARUSWEB.Infrastructure.Persistence
 {
-    public sealed class AppDbContext : DbContext, IAppDbContext
+    public sealed class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>, IAppDbContext
     {
         private readonly IDateTime _clock;
 
@@ -24,8 +27,18 @@ namespace IKARUSWEB.Infrastructure.Persistence
                 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+      
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<AppUser>(b =>
+            {
+                b.Property(u => u.FullName).HasMaxLength(200);
+                b.HasOne<Tenant>()
+                 .WithMany()
+                 .HasForeignKey(u => u.TenantId)
+                 .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }
 }

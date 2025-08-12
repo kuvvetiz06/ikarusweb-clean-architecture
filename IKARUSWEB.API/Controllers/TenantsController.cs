@@ -3,10 +3,12 @@ using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
 using IKARUSWEB.Application.Features.Tenants.Queries.GetTenantById;
 using IKARUSWEB.Application.Mapping;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IKARUSWEB.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public sealed class TenantsController : ControllerBase
