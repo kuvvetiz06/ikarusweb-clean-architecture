@@ -17,7 +17,7 @@ namespace IKARUSWEB.Infrastructure.Persistence
 
             // Örnek fallback. Gerçekte API/appsettings.json kullanılacak.
             var cs = Environment.GetEnvironmentVariable("IKARUSWEB_ConnectionString")
-                     ?? "Server = HUSEYINGOKDEMR\\SQLEXPRESS; TrustServerCertificate=True; Database = MailScheduler; User Id = sa; Password = Gok1905demir+";
+                     ?? "Server = HUSEYINGOKDEMR\\SQLEXPRESS; TrustServerCertificate=True; Database = IKARUSWEB; User Id = sa; Password = Gok1905demir+";
 
             optionsBuilder.UseSqlServer(cs);
 
