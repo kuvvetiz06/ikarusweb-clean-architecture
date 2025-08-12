@@ -1,7 +1,9 @@
 ﻿using IKARUSWEB.Application.Abstractions;
+using IKARUSWEB.Application.Abstractions.Repositories;
 using IKARUSWEB.Infrastructure.Identity;
 using IKARUSWEB.Infrastructure.Persistence;
 using IKARUSWEB.Infrastructure.Persistence.Interceptors;
+using IKARUSWEB.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +21,7 @@ namespace IKARUSWEB.Infrastructure
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUser, CurrentUser>();
             services.AddSingleton<IDateTime, SystemDateTime>();
-
+            services.AddScoped<ITenantRepository, TenantRepository>();
             // Interceptor DI
             services.AddScoped<AuditingSaveChangesInterceptor>();
 
