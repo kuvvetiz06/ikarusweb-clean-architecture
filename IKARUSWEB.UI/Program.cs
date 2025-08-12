@@ -1,10 +1,14 @@
-using System.Globalization;
+using IKARUSWEB.UI.Filters;
 using IKARUSWEB.UI.Models.Api;
 using IKARUSWEB.UI.Services.Api;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(o =>
+{
+    o.Filters.Add<UnauthorizedRedirectFilter>();
+});
 
 // Localization
 builder.Services.AddLocalization();
@@ -26,13 +30,14 @@ builder.Services.AddAuthentication("ui-cookie")
 
 builder.Services.AddHttpContextAccessor();
 
-// Typed HttpClient + token handler
 builder.Services.AddTransient<AuthTokenHandler>();
 builder.Services.AddHttpClient<IApiClient, ApiClient>(http =>
 {
     http.BaseAddress = new Uri(builder.Configuration["Api:BaseAddress"]!);
 })
-.AddHttpMessageHandler<AuthTokenHandler>();
+.AddHttpMessageHandler<AuthTokenHandler>()
+.AddPolicyHandler(HttpPolicies.GetRetryPolicy())
+.AddPolicyHandler(HttpPolicies.GetTimeoutPolicy());
 
 var app = builder.Build();
 
