@@ -4,7 +4,11 @@ using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
 using IKARUSWEB.Application.Mapping;
 using IKARUSWEB.Infrastructure;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using System.Globalization;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +23,29 @@ var cultures = supported.Select(c => new CultureInfo(c)).ToArray();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(o =>
-{
-    o.SwaggerDoc("v1", new() { Title = "IKARUSWEB API", Version = "v1" });
-    // JWT þemasýný bir sonraki PR’da ekleyeceðiz
-});
+builder.Services.AddOpenApi();
+// JWT Auth
+var jwt = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwt["Key"] ?? "");
 
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwt["Issuer"],
+            ValidAudience = jwt["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization();
 // Application registrations
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(CreateTenantCommand).Assembly));
@@ -63,8 +84,8 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();               // /openapi/v1.json
+    app.MapScalarApiReference();    // Scalar UI
 }
 app.UseMiddleware<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
 app.UseHttpsRedirection();
