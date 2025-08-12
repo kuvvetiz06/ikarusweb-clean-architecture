@@ -28,6 +28,13 @@
                         </li>
                     </ul>
                 </div>
+                <form asp-controller="Language" asp-action="Set" method="post" class="d-inline">
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                    <select name="culture" onchange="this.form.submit()">
+                        <option value="tr-TR">Türkçe</option>
+                        <option value="en-US">English</option>
+                    </select>
+                </form>
             </div>
         </nav>
     </header>
