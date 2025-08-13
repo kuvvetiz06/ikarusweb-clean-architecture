@@ -1,22 +1,25 @@
 using IKARUSWEB.UI.Filters;
 using IKARUSWEB.UI.Models.Api;
 using IKARUSWEB.UI.Services.Api;
+using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews(o =>
-{
-    o.Filters.Add<UnauthorizedRedirectFilter>();
-});
+
 
 // Localization
-builder.Services.AddLocalization();
+// 1) .resx kök klasörü
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 var locCfg = builder.Configuration.GetSection("Localization");
 var supported = locCfg.GetSection("SupportedCultures").Get<string[]>() ?? new[] { "tr-TR", "en-US" };
 var defaultCulture = locCfg["DefaultCulture"] ?? "tr-TR";
 var cultures = supported.Select(c => new CultureInfo(c)).ToArray();
-
+builder.Services.AddControllersWithViews(o =>
+{
+    o.Filters.Add<UnauthorizedRedirectFilter>();
+}).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization();
 // Cookie auth
 builder.Services.AddAuthentication("ui-cookie")
     .AddCookie("ui-cookie", o =>
