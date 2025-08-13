@@ -5,6 +5,7 @@ using IKARUSWEB.Application.Mapping;
 using IKARUSWEB.Infrastructure;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Globalization;
@@ -22,7 +23,7 @@ var defaultCulture = locCfg["DefaultCulture"] ?? "tr-TR";
 var cultures = supported.Select(c => new CultureInfo(c)).ToArray();
 
 // Swagger
-builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 // JWT Auth
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -75,12 +76,20 @@ builder.Services.AddTransient<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
 var app = builder.Build();
 
 // RequestLocalization
-app.UseRequestLocalization(new RequestLocalizationOptions
+var rlo = new RequestLocalizationOptions
 {
     DefaultRequestCulture = new(defaultCulture),
     SupportedCultures = cultures,
     SupportedUICultures = cultures
-});
+};
+// Sýra: QueryString > Cookie > Accept-Language
+rlo.RequestCultureProviders = new IRequestCultureProvider[]
+{
+    new QueryStringRequestCultureProvider(),
+    new CookieRequestCultureProvider(),
+    new AcceptLanguageHeaderRequestCultureProvider()
+};
+app.UseRequestLocalization(rlo);
 
 if (app.Environment.IsDevelopment())
 {
