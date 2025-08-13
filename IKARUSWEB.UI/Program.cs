@@ -1,6 +1,7 @@
 using IKARUSWEB.UI.Filters;
 using IKARUSWEB.UI.Models.Api;
 using IKARUSWEB.UI.Services.Api;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
 
@@ -9,17 +10,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // Localization
-// 1) .resx kök klasörü
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-var locCfg = builder.Configuration.GetSection("Localization");
-var supported = locCfg.GetSection("SupportedCultures").Get<string[]>() ?? new[] { "tr-TR", "en-US" };
-var defaultCulture = locCfg["DefaultCulture"] ?? "tr-TR";
-var cultures = supported.Select(c => new CultureInfo(c)).ToArray();
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+var supported = new[] { "tr-TR", "en-US" }.Select(c => new CultureInfo(c)).ToArray();
+var rlo = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new("tr-TR"),
+    SupportedCultures = supported,
+    SupportedUICultures = supported,
+    RequestCultureProviders = new IRequestCultureProvider[] {
+    new QueryStringRequestCultureProvider(),
+    new CookieRequestCultureProvider(),
+    new AcceptLanguageHeaderRequestCultureProvider()
+  }
+};
 builder.Services.AddControllersWithViews(o =>
 {
     o.Filters.Add<UnauthorizedRedirectFilter>();
-}).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-    .AddDataAnnotationsLocalization();
+}).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix).AddDataAnnotationsLocalization();
 // Cookie auth
 builder.Services.AddAuthentication("ui-cookie")
     .AddCookie("ui-cookie", o =>
@@ -45,12 +52,7 @@ builder.Services.AddHttpClient<IApiClient, ApiClient>(http =>
 var app = builder.Build();
 
 // RequestLocalization
-app.UseRequestLocalization(new RequestLocalizationOptions
-{
-    DefaultRequestCulture = new(defaultCulture),
-    SupportedCultures = cultures,
-    SupportedUICultures = cultures
-});
+app.UseRequestLocalization(rlo);
 
 if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Home/Error");
 app.UseHttpsRedirection();

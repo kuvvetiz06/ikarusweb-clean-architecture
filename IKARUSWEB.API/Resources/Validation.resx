@@ -123,6 +123,9 @@
   <data name="Validation.Tenant.Country.Required" xml:space="preserve">
     <value />
   </data>
+  <data name="Validation.Tenant.Name.MinLength" xml:space="preserve">
+    <value />
+  </data>
   <data name="Validation.Tenant.Name.Required" xml:space="preserve">
     <value />
   </data>

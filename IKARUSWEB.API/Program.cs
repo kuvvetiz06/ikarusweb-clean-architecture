@@ -7,6 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.Globalization;
 using System.Text;
@@ -14,17 +15,23 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-
-// Localization (system messages)
-builder.Services.AddLocalization();
-var locCfg = builder.Configuration.GetSection("Localization");
-var supported = locCfg.GetSection("SupportedCultures").Get<string[]>() ?? new[] { "tr-TR", "en-US" };
-var defaultCulture = locCfg["DefaultCulture"] ?? "tr-TR";
-var cultures = supported.Select(c => new CultureInfo(c)).ToArray();
-
-// Swagger
-//builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+// Localization (system messages)
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+var supported = new[] { "tr-TR", "en-US" }.Select(c => new CultureInfo(c)).ToArray();
+var rlo = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new("tr-TR"),
+    SupportedCultures = supported,
+    SupportedUICultures = supported,
+    RequestCultureProviders = new IRequestCultureProvider[] {
+    new QueryStringRequestCultureProvider(),
+    new CookieRequestCultureProvider(),
+    new AcceptLanguageHeaderRequestCultureProvider()
+  }
+};
+
+
 // JWT Auth
 var jwt = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwt["Key"] ?? "");
@@ -76,26 +83,14 @@ builder.Services.AddTransient<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
 var app = builder.Build();
 
 // RequestLocalization
-var rlo = new RequestLocalizationOptions
-{
-    DefaultRequestCulture = new(defaultCulture),
-    SupportedCultures = cultures,
-    SupportedUICultures = cultures
-};
-// Sýra: QueryString > Cookie > Accept-Language
-rlo.RequestCultureProviders = new IRequestCultureProvider[]
-{
-    new QueryStringRequestCultureProvider(),
-    new CookieRequestCultureProvider(),
-    new AcceptLanguageHeaderRequestCultureProvider()
-};
 app.UseRequestLocalization(rlo);
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();               // /openapi/v1.json
-    app.MapScalarApiReference();    // Scalar UI
+    app.MapOpenApi();            // /openapi/v1.json
+    app.MapScalarApiReference(); // /scalar/v1
 }
+
 app.UseMiddleware<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
 app.UseHttpsRedirection();
 
