@@ -18,10 +18,9 @@ namespace IKARUSWEB.Infrastructure.Auth
     public sealed class TokenService : ITokenService
     {
         private readonly JwtOptions _opt;
-
         public TokenService(JwtOptions opt) => _opt = opt;
 
-        public string Create(AppUser user, IEnumerable<string> roles)
+        public string Create(AppUser user, IEnumerable<string>? roles = null)
         {
             var claims = new List<Claim>
         {
@@ -30,8 +29,16 @@ namespace IKARUSWEB.Infrastructure.Auth
             new(ClaimTypes.Name, user.UserName ?? ""),
             new(JwtRegisteredClaimNames.Email, user.Email ?? "")
         };
-            if (user.TenantId is Guid t) claims.Add(new("tenantId", t.ToString()));
-            claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+            if (user.TenantId is Guid t)
+                claims.Add(new("tenantId", t.ToString()));
+
+            // NULL-GÜVENLİ: roles null ise boş kabul et
+            var roleClaims = (roles ?? Array.Empty<string>())
+                .Where(r => !string.IsNullOrWhiteSpace(r))
+                .Select(r => new Claim(ClaimTypes.Role, r));
+
+            claims.AddRange(roleClaims);
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_opt.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

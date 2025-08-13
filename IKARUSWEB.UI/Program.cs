@@ -25,6 +25,7 @@ var rlo = new RequestLocalizationOptions
 };
 builder.Services.AddControllersWithViews(o =>
 {
+    o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
     o.Filters.Add<UnauthorizedRedirectFilter>();
 }).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix).AddDataAnnotationsLocalization();
 // Cookie auth
