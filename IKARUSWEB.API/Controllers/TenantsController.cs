@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IKARUSWEB.API.Controllers
 {
-    
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public sealed class TenantsController : ControllerBase

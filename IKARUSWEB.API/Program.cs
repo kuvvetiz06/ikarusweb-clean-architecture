@@ -6,6 +6,7 @@ using IKARUSWEB.Infrastructure;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
@@ -62,6 +63,12 @@ var rlo = new RequestLocalizationOptions
   }
 };
 
+builder.Services.Configure<ApiBehaviorOptions>(o =>
+{
+    // ModelState invalid ise otomatik 400 dönmesin; handler çalýþsýn,
+    // FluentValidation ValidationException’ýný ExceptionMiddleware yakalasýn.
+    o.SuppressModelStateInvalidFilter = true;
+});
 
 // JWT Auth
 var jwt = builder.Configuration.GetSection("Jwt");
