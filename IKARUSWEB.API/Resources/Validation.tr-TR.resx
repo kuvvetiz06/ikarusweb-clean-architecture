@@ -123,6 +123,9 @@
   <data name="Validation.Tenant.Country.Required" xml:space="preserve">
     <value>Ülke zorunludur</value>
   </data>
+  <data name="Validation.Tenant.Name.MinLength" xml:space="preserve">
+    <value>Otel Adı, 2 karakterden büyük veya eşit olmalıdır. 0 karakter girdiniz.</value>
+  </data>
   <data name="Validation.Tenant.Name.Required" xml:space="preserve">
     <value>Otel adı zorunludur</value>
   </data>
