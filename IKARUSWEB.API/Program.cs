@@ -15,7 +15,38 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+//Open API
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, ct) =>
+    {
+        // SecuritySchemes
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, OpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Name = "Authorization",
+            Description = "Bearer {token}"
+        };
+
+        // Global security requirement (NOT: Security -> SecurityRequirements)
+        document.SecurityRequirements ??= new List<OpenApiSecurityRequirement>();
+        document.SecurityRequirements.Add(new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecurityScheme
+            { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }
+            ] = Array.Empty<string>()
+        });
+
+        return Task.CompletedTask;
+    });
+});
+
 // Localization (system messages)
 builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 var supported = new[] { "tr-TR", "en-US" }.Select(c => new CultureInfo(c)).ToArray();

@@ -1,39 +1,57 @@
 ﻿using IKARUSWEB.UI.Models.Api;
+using IKARUSWEB.UI.Services.Api;
+using System.Net;
 
-namespace IKARUSWEB.UI.Services.Api
+public sealed class ApiClient : IApiClient
 {
-    public sealed class ApiClient : IApiClient
+    private readonly HttpClient _http;
+    public ApiClient(HttpClient http) => _http = http;
+
+    private static async Task ThrowIfError(HttpResponseMessage resp, CancellationToken ct)
     {
-        private readonly HttpClient _http;
+        if (resp.IsSuccessStatusCode) return;
 
-        public ApiClient(HttpClient http) => _http = http;
+        if (resp.StatusCode == HttpStatusCode.Unauthorized)
+            throw new UnauthorizedAccessException("API request unauthorized.");
 
-        public async Task<string?> LoginAsync(string userName, string password, CancellationToken ct = default)
+        ApiErrorEnvelope? env = null;
+        try
         {
-            using var resp = await _http.PostAsJsonAsync("/api/auth/login", new { userName, password }, ct);
-            if (!resp.IsSuccessStatusCode) return null;
-            var obj = await resp.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: ct);
-            return obj?.access_token;
+            env = await resp.Content.ReadFromJsonAsync<ApiErrorEnvelope>(cancellationToken: ct);
         }
+        catch { /* body parse edilemezse null kalır */ }
 
-        public async Task<TenantVm?> GetTenantAsync(Guid id, CancellationToken ct = default)
-        {
-            using var resp = await _http.GetAsync($"/api/tenants/{id}", ct);
-            if (!resp.IsSuccessStatusCode) return null;
+        var msg = env?.Problem?.Detail
+                  ?? env?.Problem?.Title
+                  ?? resp.ReasonPhrase
+                  ?? "Request failed";
 
-            var body = await resp.Content.ReadFromJsonAsync<Result<TenantVm>>(cancellationToken: ct);
-            return body is { Succeeded: true, Data: not null } ? body.Data : null;
-        }
-
-        public async Task<TenantVm?> CreateTenantAsync(CreateTenantDto dto, CancellationToken ct = default)
-        {
-            using var resp = await _http.PostAsJsonAsync($"/api/tenants", dto, ct);
-            if (!resp.IsSuccessStatusCode) return null;
-
-            var body = await resp.Content.ReadFromJsonAsync<Result<TenantVm>>(cancellationToken: ct);
-            return body is { Succeeded: true, Data: not null } ? body.Data : null;
-        }
-
-        private sealed record LoginResponse(string access_token);
+        throw new ApiException(env?.Problem, env?.Errors, msg);
     }
+
+    public async Task<string?> LoginAsync(string userName, string password, CancellationToken ct = default)
+    {
+        using var resp = await _http.PostAsJsonAsync("/api/auth/login", new { userName, password }, ct);
+        await ThrowIfError(resp, ct);
+        var obj = await resp.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: ct);
+        return obj?.access_token;
+    }
+
+    public async Task<TenantVm?> GetTenantAsync(Guid id, CancellationToken ct = default)
+    {
+        using var resp = await _http.GetAsync($"/api/tenants/{id}", ct);
+        await ThrowIfError(resp, ct);
+        var body = await resp.Content.ReadFromJsonAsync<Result<TenantVm>>(cancellationToken: ct);
+        return body?.Data;
+    }
+
+    public async Task<TenantVm?> CreateTenantAsync(CreateTenantDto dto, CancellationToken ct = default)
+    {
+        using var resp = await _http.PostAsJsonAsync($"/api/tenants", dto, ct);
+        await ThrowIfError(resp, ct);
+        var body = await resp.Content.ReadFromJsonAsync<Result<TenantVm>>(cancellationToken: ct);
+        return body?.Data;
+    }
+
+    private sealed record LoginResponse(string access_token);
 }

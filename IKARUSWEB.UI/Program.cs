@@ -1,5 +1,5 @@
 using IKARUSWEB.UI.Filters;
-using IKARUSWEB.UI.Models.Api;
+using IKARUSWEB.UI.Services;
 using IKARUSWEB.UI.Services.Api;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -40,6 +40,7 @@ builder.Services.AddAuthentication("ui-cookie")
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddSingleton<ITempDataNotifier, TempDataNotifier>();
 builder.Services.AddTransient<AuthTokenHandler>();
 builder.Services.AddHttpClient<IApiClient, ApiClient>(http =>
 {
