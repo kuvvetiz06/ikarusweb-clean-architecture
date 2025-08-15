@@ -9,45 +9,41 @@ namespace IKARUSWEB.Domain.Entities
 {
     public sealed class Tenant : BaseEntity
     {
-        // Kiracı/Otel kimliği
-        public string Name { get; private set; } = string.Empty;
+        public string Name { get; private set; } = null!;
+        public string Country { get; private set; } = null!;
+        public string City { get; private set; } = null!;
+        public string Street { get; private set; } = null!;
 
-        // Adres ve meta
-        public string Street { get; private set; } = string.Empty;
-        public string City { get; private set; } = string.Empty;
-        public string Country { get; private set; } = string.Empty;
+        // 3 harf ISO kodu – Currency tablosuyla ilişki kuracağız
+        public string? DefaultCurrencyCode { get; private set; } // nullable oldu
 
-        // Otel opsiyonları
-        public string DefaultCurrency { get; private set; } = "TRY";
         public string TimeZone { get; private set; } = "Europe/Istanbul";
-
-        // Çok dillilik için varsayılan kültür (UI tarafını yönlendirmek için)
         public string DefaultCulture { get; private set; } = "tr-TR";
 
-        // İlişkiler
-        private readonly List<Room> _rooms = new();
-        public IReadOnlyCollection<Room> Rooms => _rooms.AsReadOnly();
-
-        // Factory-like ctor (setter’ları private tutuyoruz)
-        public Tenant(string name, string country, string city, string street,
-                      string defaultCurrency = "TRY", string timeZone = "Europe/Istanbul", string defaultCulture = "tr-TR")
-        {
-            Name = name.Trim();
-            Country = country.Trim();
-            City = city.Trim();
-            Street = street.Trim();
-            DefaultCurrency = defaultCurrency;
-            TimeZone = timeZone;
-            DefaultCulture = defaultCulture;
-        }
-
-        // For EF
+        //EF Core için boş constructor gerekli
         private Tenant() { }
 
-        public void Rename(string newName)
+        public Tenant(string name, string country, string city, string street,
+                   string timeZone, string defaultCulture)
         {
-            Name = string.IsNullOrWhiteSpace(newName) ? Name : newName.Trim();
+            Name = name;
+            Country = country;
+            City = city;
+            Street = street;
+            TimeZone = timeZone;
+            DefaultCulture = defaultCulture.Trim();
+            // DefaultCurrencyCode burada boş kalacak; seed sonunda set edilecek
+        }
+
+        public Tenant Rename(string name) { Name = name; Touch(); return this; }
+
+        public Tenant SetDefaultCurrency(string code)
+        {
+            var c = code.Trim().ToUpperInvariant();
+            if (c.Length != 3) throw new ArgumentException("Currency code must be 3 letters.", nameof(code));
+            DefaultCurrencyCode = c;
             Touch();
+            return this;
         }
     }
 }

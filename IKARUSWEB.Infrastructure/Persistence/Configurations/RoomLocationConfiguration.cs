@@ -15,8 +15,16 @@ namespace IKARUSWEB.Infrastructure.Persistence.Configurations
         {
             b.ToTable("RoomLocations");
             b.HasKey(x => x.Id);
+
+            b.Property(x => x.TenantId).IsRequired();
             b.Property(x => x.Name).IsRequired().HasMaxLength(100);
-            b.HasIndex(x => x.Name).IsUnique();
+            b.Property(x => x.Code).HasMaxLength(20);
+            b.Property(x => x.Description).HasMaxLength(500);
+
+            b.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
+            b.HasIndex(x => new { x.TenantId, x.Code }).IsUnique().HasFilter("[Code] IS NOT NULL");
+
+            b.HasOne<Tenant>().WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

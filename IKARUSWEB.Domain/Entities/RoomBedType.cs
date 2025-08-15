@@ -7,14 +7,19 @@ using System.Threading.Tasks;
 
 namespace IKARUSWEB.Domain.Entities
 {
-    public sealed class RoomBedType : BaseEntity
+    public sealed class RoomBedType : BaseEntity, IMustHaveTenant
     {
-        public string Name { get; private set; } = string.Empty;
-        private RoomBedType() { }
-        public RoomBedType(string name)
-        {
-            Name = name.Trim();
-        }
-    }
+        public Guid TenantId { get; private set; }
+        public string Name { get; private set; } = null!;
+        public string? Code { get; private set; }
+        public string? Description { get; private set; }
 
+        private readonly List<Room> _rooms = new();
+        public IReadOnlyCollection<Room> Rooms => _rooms.AsReadOnly();
+
+        private RoomBedType() { }
+        public RoomBedType(string name, string? code = null, string? description = null)
+        { Name = name; Code = code?.Trim()?.ToUpperInvariant(); Description = description; }
+    }
 }
+

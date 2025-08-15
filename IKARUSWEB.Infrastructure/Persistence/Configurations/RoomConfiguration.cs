@@ -17,39 +17,29 @@ namespace IKARUSWEB.Infrastructure.Persistence.Configurations
             b.ToTable("Rooms");
             b.HasKey(x => x.Id);
 
+            b.Property(x => x.TenantId).IsRequired();
+
+            // Detay alanlar
             b.Property(x => x.Number).IsRequired().HasMaxLength(50);
             b.Property(x => x.Description).HasMaxLength(500);
             b.Property(x => x.Floor).HasMaxLength(20);
             b.Property(x => x.MaxBed).IsRequired();
 
-            // Tenant zorunlu + oda numarası tenant bazında unique
+            // ≥ 1 kuralı
+            b.HasCheckConstraint("CK_Room_MaxBed_Min1", "[MaxBed] >= 1");
+
+            // Kiracı içinde oda numarası benzersiz
             b.HasIndex(x => new { x.TenantId, x.Number }).IsUnique();
 
-            b.HasOne(x => x.Tenant)
-                .WithMany(t => t.Rooms)
-                .HasForeignKey(x => x.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // Zorunlu ilişkiler
+            b.HasOne(x => x.RoomType).WithMany(rt => rt.Rooms).HasForeignKey(x => x.RoomTypeId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(x => x.RoomView).WithMany(rv => rv.Rooms).HasForeignKey(x => x.RoomViewId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(x => x.RoomBedType).WithMany(rbt => rbt.Rooms).HasForeignKey(x => x.RoomBedTypeId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(x => x.RoomLocation).WithMany(rl => rl.Rooms).HasForeignKey(x => x.RoomLocationId).OnDelete(DeleteBehavior.Restrict);
 
-            b.HasOne(x => x.RoomType)
-                .WithMany()
-                .HasForeignKey(x => x.RoomTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.HasOne(x => x.RoomView)
-                .WithMany()
-                .HasForeignKey(x => x.RoomViewId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.HasOne(x => x.RoomLocation)
-                .WithMany()
-                .HasForeignKey(x => x.RoomLocationId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.HasOne(x => x.RoomBedType)
-                .WithMany()
-                .HasForeignKey(x => x.RoomBedTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // Tenant FK
+            b.HasOne<Tenant>().WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Restrict);
         }
     }
-  
+
 }

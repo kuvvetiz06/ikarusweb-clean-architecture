@@ -22,6 +22,73 @@ namespace IKARUSWEB.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.Currency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("CurrencyMultiplier")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Currencies", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Currency_Code_Len3", "LEN([Code]) = 3");
+
+                            t.HasCheckConstraint("CK_Currency_Multiplier_Positive", "[CurrencyMultiplier] > 0");
+
+                            t.HasCheckConstraint("CK_Currency_Rate_NonNegative", "[Rate] >= 0");
+                        });
+                });
+
             modelBuilder.Entity("IKARUSWEB.Domain.Entities.Room", b =>
                 {
                     b.Property<Guid>("Id")
@@ -41,12 +108,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Floor")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -98,7 +163,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
                     b.HasIndex("TenantId", "Number")
                         .IsUnique();
 
-                    b.ToTable("Rooms", (string)null);
+                    b.ToTable("Rooms", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Room_MaxBed_Min1", "[MaxBed] >= 1");
+                        });
                 });
 
             modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomBedType", b =>
@@ -106,6 +174,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -118,6 +190,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
 
                     b.Property<string>("DeletedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -136,9 +212,16 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasFilter("[Code] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "Name")
                         .IsUnique();
 
                     b.ToTable("RoomBedTypes", (string)null);
@@ -150,6 +233,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Code")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -161,6 +248,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
 
                     b.Property<string>("DeletedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -179,9 +270,16 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasFilter("[Code] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "Name")
                         .IsUnique();
 
                     b.ToTable("RoomLocations", (string)null);
@@ -193,6 +291,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Code")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -204,6 +306,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
 
                     b.Property<string>("DeletedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -222,9 +328,16 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasFilter("[Code] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "Name")
                         .IsUnique();
 
                     b.ToTable("RoomTypes", (string)null);
@@ -236,6 +349,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Code")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -247,6 +364,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
 
                     b.Property<string>("DeletedBy")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -265,9 +386,16 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasFilter("[Code] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "Name")
                         .IsUnique();
 
                     b.ToTable("RoomViews", (string)null);
@@ -276,7 +404,6 @@ namespace IKARUSWEB.Infrastructure.Migrations
             modelBuilder.Entity("IKARUSWEB.Domain.Entities.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("City")
@@ -300,10 +427,10 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("DefaultCurrency")
-                        .IsRequired()
+                    b.Property<string>("DefaultCurrencyCode")
                         .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -343,7 +470,12 @@ namespace IKARUSWEB.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Tenants", (string)null);
+                    b.HasIndex("Id", "DefaultCurrencyCode");
+
+                    b.ToTable("Tenants", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Tenant_DefaultCurrencyCode_NullOrLen3", "[DefaultCurrencyCode] IS NULL OR LEN([DefaultCurrencyCode]) = 3");
+                        });
                 });
 
             modelBuilder.Entity("IKARUSWEB.Infrastructure.Identity.AppUser", b =>
@@ -552,34 +684,43 @@ namespace IKARUSWEB.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.Currency", b =>
+                {
+                    b.HasOne("IKARUSWEB.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("IKARUSWEB.Domain.Entities.Room", b =>
                 {
                     b.HasOne("IKARUSWEB.Domain.Entities.RoomBedType", "RoomBedType")
-                        .WithMany()
+                        .WithMany("Rooms")
                         .HasForeignKey("RoomBedTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("IKARUSWEB.Domain.Entities.RoomLocation", "RoomLocation")
-                        .WithMany()
+                        .WithMany("Rooms")
                         .HasForeignKey("RoomLocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("IKARUSWEB.Domain.Entities.RoomType", "RoomType")
-                        .WithMany()
+                        .WithMany("Rooms")
                         .HasForeignKey("RoomTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("IKARUSWEB.Domain.Entities.RoomView", "RoomView")
-                        .WithMany()
+                        .WithMany("Rooms")
                         .HasForeignKey("RoomViewId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("IKARUSWEB.Domain.Entities.Tenant", "Tenant")
-                        .WithMany("Rooms")
+                    b.HasOne("IKARUSWEB.Domain.Entities.Tenant", null)
+                        .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -591,8 +732,51 @@ namespace IKARUSWEB.Infrastructure.Migrations
                     b.Navigation("RoomType");
 
                     b.Navigation("RoomView");
+                });
 
-                    b.Navigation("Tenant");
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomBedType", b =>
+                {
+                    b.HasOne("IKARUSWEB.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomLocation", b =>
+                {
+                    b.HasOne("IKARUSWEB.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomType", b =>
+                {
+                    b.HasOne("IKARUSWEB.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomView", b =>
+                {
+                    b.HasOne("IKARUSWEB.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.Tenant", b =>
+                {
+                    b.HasOne("IKARUSWEB.Domain.Entities.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("Id", "DefaultCurrencyCode")
+                        .HasPrincipalKey("TenantId", "Code")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("IKARUSWEB.Infrastructure.Identity.AppUser", b =>
@@ -654,7 +838,22 @@ namespace IKARUSWEB.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("IKARUSWEB.Domain.Entities.Tenant", b =>
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomBedType", b =>
+                {
+                    b.Navigation("Rooms");
+                });
+
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomLocation", b =>
+                {
+                    b.Navigation("Rooms");
+                });
+
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomType", b =>
+                {
+                    b.Navigation("Rooms");
+                });
+
+            modelBuilder.Entity("IKARUSWEB.Domain.Entities.RoomView", b =>
                 {
                     b.Navigation("Rooms");
                 });

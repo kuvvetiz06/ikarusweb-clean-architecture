@@ -3,6 +3,7 @@ using IKARUSWEB.Application.Behaviors;
 using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
 using IKARUSWEB.Application.Mapping;
 using IKARUSWEB.Infrastructure;
+using IKARUSWEB.Infrastructure.Seed;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
@@ -127,6 +128,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();            // /openapi/v1.json
     app.MapScalarApiReference(); // /scalar/v1
+
+    //Dummy data
+    //using var scope = app.Services.CreateScope();
+    //var seeder = scope.ServiceProvider.GetRequiredService<DevSeeder>();
+    //await seeder.RunAsync();
 }
 
 app.UseMiddleware<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();

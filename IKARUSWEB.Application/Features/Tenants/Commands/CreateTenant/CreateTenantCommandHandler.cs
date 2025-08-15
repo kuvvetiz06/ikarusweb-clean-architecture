@@ -37,7 +37,6 @@ namespace IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant
                 request.Country,
                 request.City,
                 request.Street,
-                request.DefaultCurrency,
                 request.TimeZone,
                 request.DefaultCulture
             );
