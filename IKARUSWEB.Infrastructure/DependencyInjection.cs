@@ -5,6 +5,7 @@ using IKARUSWEB.Infrastructure.Identity;
 using IKARUSWEB.Infrastructure.Persistence;
 using IKARUSWEB.Infrastructure.Persistence.Interceptors;
 using IKARUSWEB.Infrastructure.Persistence.Repositories;
+using IKARUSWEB.Infrastructure.Seed;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,10 +33,13 @@ namespace IKARUSWEB.Infrastructure
 
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUser, CurrentUser>();
+            services.AddScoped<ITenantProvider, CurrentTenant>();
             services.AddSingleton<IDateTime, SystemDateTime>();
-            services.AddScoped<ITenantRepository, TenantRepository>();
-            // Interceptor DI
+            services.AddScoped<ITenantRepository, TenantRepository>();            
             services.AddScoped<AuditingSaveChangesInterceptor>();
+            services.AddScoped<TenantAssignmentInterceptor>();
+            //services.AddScoped<DevSeeder>();
+
             var jwtSection = config.GetSection("Jwt");
             var jwtOpt = jwtSection.Get<JwtOptions>() ?? new();
             services.AddSingleton(jwtOpt);
@@ -48,8 +52,8 @@ namespace IKARUSWEB.Infrastructure
                     sql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
                 });
 
-                // Interceptor’u bağla
                 opt.AddInterceptors(sp.GetRequiredService<AuditingSaveChangesInterceptor>());
+                opt.AddInterceptors(sp.GetRequiredService<TenantAssignmentInterceptor>());
             });
 
             // IAppDbContext portu (repo’lar commit için kullanacak)

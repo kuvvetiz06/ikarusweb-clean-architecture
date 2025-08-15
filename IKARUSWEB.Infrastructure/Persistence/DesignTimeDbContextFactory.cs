@@ -22,14 +22,21 @@ namespace IKARUSWEB.Infrastructure.Persistence
             optionsBuilder.UseSqlServer(cs);
 
             // Basit clock
-            IDateTime clock = new DesignTimeClock();
+            var tenant = new DesignTimeTenantProvider();
 
-            return new AppDbContext(optionsBuilder.Options, clock);
+            return new AppDbContext(optionsBuilder.Options, tenant);
         }
 
         private sealed class DesignTimeClock : IDateTime
         {
             public DateTime UtcNow => DateTime.UtcNow;
         }
+
+        private sealed class DesignTimeTenantProvider : ITenantProvider
+        {
+            public Guid? TenantId => null;   // design-time'da tenant yok
+            public bool IsSuperUser => true; // filtreleri etkisiz bırakmaya uygun
+        }
     }
+
 }
