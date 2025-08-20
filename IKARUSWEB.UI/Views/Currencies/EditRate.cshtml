@@ -1,0 +1,20 @@
+﻿
+@{
+    ViewData["Title"] = "EditRate";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model (Guid id, string code, decimal rate)
+@inject IViewLocalizer L
+<h2>@L["EditRate"] - @Model.code</h2>
+
+<form asp-action="EditRate" method="post" novalidate>
+    <input type="hidden" name="id" value="@Model.id" />
+    <div class="mb-3">
+        <label class="form-label">@L["Rate"]</label>
+        <input name="rate" class="form-control" value="@Model.rate" />
+    </div>
+    <button class="btn btn-primary">@L["Save"]</button>
+    <a asp-action="Index" class="btn btn-secondary">@L["Cancel"]</a>
+</form>
+
