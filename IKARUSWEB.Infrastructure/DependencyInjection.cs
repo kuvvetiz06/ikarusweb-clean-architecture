@@ -35,10 +35,14 @@ namespace IKARUSWEB.Infrastructure
             services.AddScoped<ICurrentUser, CurrentUser>();
             services.AddScoped<ITenantProvider, CurrentTenant>();
             services.AddSingleton<IDateTime, SystemDateTime>();
-            services.AddScoped<ITenantRepository, TenantRepository>();            
+            services.AddScoped<ITenantRepository, TenantRepository>();
+            services.AddScoped<ICurrencyRepository, CurrencyRepository>();
             services.AddScoped<AuditingSaveChangesInterceptor>();
             services.AddScoped<TenantAssignmentInterceptor>();
+
             //services.AddScoped<DevSeeder>();
+
+            services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>()); // SaveChanges için
 
             var jwtSection = config.GetSection("Jwt");
             var jwtOpt = jwtSection.Get<JwtOptions>() ?? new();

@@ -40,7 +40,7 @@ builder.Services.AddAuthentication("ui-cookie")
     });
 
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddSession();
 builder.Services.AddSingleton<ITempDataNotifier, TempDataNotifier>();
 builder.Services.AddTransient<AuthTokenHandler>();
 builder.Services.AddHttpClient<IApiClient, ApiClient>(http =>

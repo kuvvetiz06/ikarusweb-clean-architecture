@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model List<IKARUSWEB.UI.Models.Currencies.CurrencyViewModel>
+@inject IViewLocalizer L
+<h2>@L["Currencies"]</h2>
+
+@if (TempData["ok"] is string ok)
+{
+    <div class="alert alert-success">@ok</div>
+}
+@if (TempData["err"] is string err)
+{
+    <div class="alert alert-danger">@err</div>
+}
+
+<form method="get" class="mb-3">
+    <input name="q" class="form-control" placeholder="@L["Search"]" value="@Context.Request.Query["q"]" />
+</form>
+
+<a asp-action="Create" class="btn btn-primary mb-3">@L["NewCurrency"]</a>
+
+<table class="table table-striped">
+    <thead><tr><th>@L["Code"]</th><th>@L["Name"]</th><th>@L["Multiplier"]</th><th>@L["Rate"]</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Code</td>
+                <td>@c.Name</td>
+                <td>@c.CurrencyMultiplier</td>
+                <td>@c.Rate</td>
+                <td>
+                    <a asp-action="EditRate" asp-route-id="@c.Id" asp-route-code="@c.Code" asp-route-rate="@c.Rate" class="btn btn-sm btn-outline-secondary">
+                        @L["EditRate"]
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+

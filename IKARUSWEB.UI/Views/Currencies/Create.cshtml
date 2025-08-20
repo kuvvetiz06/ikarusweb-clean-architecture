@@ -1,0 +1,39 @@
+﻿
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model IKARUSWEB.UI.Models.Currencies.CreateCurrencyRequest
+@inject IViewLocalizer L
+<h2>@L["NewCurrency"]</h2>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-action="Create" method="post" novalidate>
+    <div class="mb-3">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="CurrencyMultiplier" class="form-label"></label>
+        <input asp-for="CurrencyMultiplier" class="form-control" />
+        <span asp-validation-for="CurrencyMultiplier" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Rate" class="form-label"></label>
+        <input asp-for="Rate" class="form-control" />
+        <span asp-validation-for="Rate" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-primary">@L["Save"]</button>
+    <a asp-action="Index" class="btn btn-secondary">@L["Cancel"]</a>
+</form>
+
+

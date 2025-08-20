@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 
 namespace IKARUSWEB.Application.Mapping
 {
-    public sealed class TenantProfile : Profile
+    public sealed class CurrencyProfile : Profile
     {
-        public TenantProfile()
+        public CurrencyProfile()
         {
-            CreateMap<Tenant, TenantDto>();
+            CreateMap<Currency, CurrencyDto>();
         }
     }
-
-   
 }

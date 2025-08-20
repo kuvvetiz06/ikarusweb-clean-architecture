@@ -1,11 +1,20 @@
-﻿using IKARUSWEB.UI.Models.Api;
+﻿using IKARUSWEB.Application.Mapping;
+using IKARUSWEB.UI.Models.Api;
+using IKARUSWEB.UI.Models.Currencies;
+using IKARUSWEB.UI.Services;
 using IKARUSWEB.UI.Services.Api;
 using System.Net;
+using System.Text;
+using System.Text.Json;
 
 public sealed class ApiClient : IApiClient
 {
     private readonly HttpClient _http;
     public ApiClient(HttpClient http) => _http = http;
+    private static readonly JsonSerializerOptions JsonOpts = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     private sealed class ValidationProblemDto
     {
@@ -71,6 +80,42 @@ public sealed class ApiClient : IApiClient
         var body = await resp.Content.ReadFromJsonAsync<Result<TenantVm>>(cancellationToken: ct);
         return body?.Data;
     }
+
+    public async Task<IReadOnlyList<CurrencyDto>> GetCurrenciesAsync(string? q, CancellationToken ct = default)
+    {
+        var url = string.IsNullOrWhiteSpace(q) ? "api/currencies" : $"api/currencies?q={Uri.EscapeDataString(q)}";
+        using var resp = await _http.GetAsync(url, ct);
+        if (!resp.IsSuccessStatusCode)
+            throw await HttpApiException.FromResponseAsync(resp);
+
+        var list = await resp.Content.ReadFromJsonAsync<IReadOnlyList<CurrencyDto>>(JsonOpts, ct);
+        return list ?? Array.Empty<CurrencyDto>();
+    }
+
+    public async Task<Result<CurrencyDto>> CreateCurrencyAsync(CreateCurrencyRequest req, CancellationToken ct = default)
+    {
+        using var resp = await _http.PostAsJsonAsync("api/currencies", req, JsonOpts, ct);
+        if (!resp.IsSuccessStatusCode)
+            throw await HttpApiException.FromResponseAsync(resp);
+
+        // API: Result<CurrencyDto> döndürüyor
+        var env = await resp.Content.ReadFromJsonAsync<Result<CurrencyDto>>(JsonOpts, ct);
+        return env ?? Result<CurrencyDto>.Failure("Empty response");
+    }
+
+    public async Task<Result<CurrencyDto>> UpdateCurrencyRateAsync(Guid id, decimal rate, CancellationToken ct = default)
+    {
+        // Body ham decimal; JSON number olması için serialize edelim
+        var content = new StringContent(JsonSerializer.Serialize(rate, JsonOpts), Encoding.UTF8, "application/json");
+
+        using var resp = await _http.PatchAsync($"api/currencies/{id}/rate", content, ct);
+        if (!resp.IsSuccessStatusCode)
+            throw await HttpApiException.FromResponseAsync(resp);
+
+        var env = await resp.Content.ReadFromJsonAsync<Result<CurrencyDto>>(JsonOpts, ct);
+        return env ?? Result<CurrencyDto>.Failure("Empty response");
+    }
+
 
     private sealed record LoginResponse(string access_token);
 }
