@@ -1,6 +1,4 @@
 using IKARUSWEB.UI.Filters;
-using IKARUSWEB.UI.Services;
-using IKARUSWEB.UI.Services.Api;
 using IKARUSWEB.UI.Transformers;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -11,8 +9,6 @@ using System.Net.Security;
 using Yarp.ReverseProxy.Forwarder;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
 
 // Localization
 builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
@@ -33,6 +29,7 @@ builder.Services.AddControllersWithViews(o =>
     o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
     o.Filters.Add<UnauthorizedRedirectFilter>();
 }).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix).AddDataAnnotationsLocalization();
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(o =>
 {
@@ -62,8 +59,6 @@ builder.Services.AddSingleton<HttpMessageInvoker>(_ =>
 
 builder.Services.AddReverseProxy();
 builder.Services.AddSession();
-builder.Services.AddSingleton<ITempDataNotifier, TempDataNotifier>();
-builder.Services.AddTransient<AuthTokenHandler>();
 
 
 var app = builder.Build();
