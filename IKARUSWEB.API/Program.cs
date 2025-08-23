@@ -1,4 +1,5 @@
 using FluentValidation;
+using IKARUSWEB.API.Transformers;
 using IKARUSWEB.Application.Behaviors;
 using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
 using IKARUSWEB.Application.Mapping;
@@ -15,43 +16,14 @@ using System.Globalization;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var supported = new[] { "tr-TR", "en-US" }.Select(c => new CultureInfo(c)).ToArray();
+var jwt = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwt["Key"] ?? "");
 
-builder.Services.AddControllers();
-
-//Open API
-builder.Services.AddOpenApi(options =>
-{
-    options.AddDocumentTransformer((document, context, ct) =>
-    {
-        // SecuritySchemes
-        document.Components ??= new OpenApiComponents();
-        document.Components.SecuritySchemes ??= new Dictionary<string, OpenApiSecurityScheme>();
-        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
-        {
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT",
-            In = ParameterLocation.Header,
-            Name = "Authorization",
-            Description = "Bearer {token}"
-        };
-
-        // Global security requirement (NOT: Security -> SecurityRequirements)
-        document.SecurityRequirements ??= new List<OpenApiSecurityRequirement>();
-        document.SecurityRequirements.Add(new OpenApiSecurityRequirement
-        {
-            [new OpenApiSecurityScheme
-            { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }
-            ] = Array.Empty<string>()
-        });
-
-        return Task.CompletedTask;
-    });
-});
 
 // Localization (system messages)
 builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
-var supported = new[] { "tr-TR", "en-US" }.Select(c => new CultureInfo(c)).ToArray();
+
 var rlo = new RequestLocalizationOptions
 {
     DefaultRequestCulture = new("tr-TR"),
@@ -64,16 +36,6 @@ var rlo = new RequestLocalizationOptions
   }
 };
 
-builder.Services.Configure<ApiBehaviorOptions>(o =>
-{
-    // ModelState invalid ise otomatik 400 dönmesin; handler çalýþsýn,
-    // FluentValidation ValidationException’ýný ExceptionMiddleware yakalasýn.
-    o.SuppressModelStateInvalidFilter = true;
-});
-
-// JWT Auth
-var jwt = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwt["Key"] ?? "");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -91,6 +53,21 @@ builder.Services
             ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
+
+builder.Services.AddControllers();
+
+// OpenAPI (Microsoft.AspNetCore.OpenApi) + JWT security eklemek için transformer
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer(new JwtBearerSecurityTransformer());
+});
+
+builder.Services.Configure<ApiBehaviorOptions>(o =>
+{
+    // ModelState invalid ise otomatik 400 dönmesin; handler çalýþsýn,
+    // FluentValidation ValidationException’ýný ExceptionMiddleware yakalasýn.
+    o.SuppressModelStateInvalidFilter = true;
+});
 
 builder.Services.AddAuthorization();
 // Application registrations
@@ -112,12 +89,7 @@ builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavi
 // Infrastructure (EF Core, Interceptor, Repositories, ICurrentUser)
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// CORS: UI API'yi tüketecek
-builder.Services.AddCors(opt =>
-{
-    opt.AddPolicy("ui", policy =>
-        policy.AllowAnyHeader().AllowAnyMethod().AllowCredentials().SetIsOriginAllowed(_ => true));
-});
+
 builder.Services.AddTransient<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
 var app = builder.Build();
 
@@ -126,8 +98,14 @@ app.UseRequestLocalization(rlo);
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();            // /openapi/v1.json
-    app.MapScalarApiReference(); // /scalar/v1
+    app.MapOpenApi();
+
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "IKARUSWEB API";
+        // Ýstersen tema/varsayýlanlarý burada deðiþtirebilirsin
+    });
+
 
     //Dummy data
     //using var scope = app.Services.CreateScope();
@@ -137,12 +115,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
 app.UseHttpsRedirection();
-
-// JWT/Identity sonraki PR’da
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseCors("ui");
 app.MapControllers();
 
 app.Run();

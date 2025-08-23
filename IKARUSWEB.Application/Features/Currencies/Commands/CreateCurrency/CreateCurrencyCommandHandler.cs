@@ -2,7 +2,7 @@
 using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Abstractions.Repositories;
 using IKARUSWEB.Application.Common.Results;
-using IKARUSWEB.Application.Mapping;
+using IKARUSWEB.Application.Contracts.Currencies;
 using IKARUSWEB.Domain.Entities;
 using MediatR;
 

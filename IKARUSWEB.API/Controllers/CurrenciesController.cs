@@ -2,7 +2,7 @@
 using IKARUSWEB.Application.Features.Currencies.Commands.CreateCurrency;
 using IKARUSWEB.Application.Features.Currencies.Commands.UpdateCurrencyRate;
 using IKARUSWEB.Application.Features.Currencies.Queries.ListCurrencies;
-using IKARUSWEB.Application.Mapping;
+using IKARUSWEB.Application.Contracts.Currencies;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

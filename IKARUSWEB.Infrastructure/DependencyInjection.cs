@@ -1,5 +1,6 @@
 ﻿using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Abstractions.Repositories;
+using IKARUSWEB.Application.Abstractions.Security;
 using IKARUSWEB.Infrastructure.Auth;
 using IKARUSWEB.Infrastructure.Identity;
 using IKARUSWEB.Infrastructure.Persistence;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
+using tokenOptions = IKARUSWEB.Application.Common.Security;
 
 namespace IKARUSWEB.Infrastructure
 {
@@ -44,10 +45,8 @@ namespace IKARUSWEB.Infrastructure
 
             services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>()); // SaveChanges için
 
-            var jwtSection = config.GetSection("Jwt");
-            var jwtOpt = jwtSection.Get<JwtOptions>() ?? new();
-            services.AddSingleton(jwtOpt);
-            services.AddSingleton<ITokenService, TokenService>();
+            services.Configure<tokenOptions.TokenOptions>(config.GetSection("Jwt"));
+            services.AddScoped<ITokenService, JwtTokenService>();
             services.AddDbContext<AppDbContext>((sp, opt) =>
             {
                 opt.UseSqlServer(cs, sql =>
