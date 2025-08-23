@@ -1,4 +1,6 @@
-﻿using IKARUSWEB.Infrastructure.Auth;
+﻿using IKARUSWEB.Application.Abstractions.Security;
+using IKARUSWEB.Application.Common.Security;
+using IKARUSWEB.Infrastructure.Auth;
 using IKARUSWEB.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,47 +10,41 @@ using System.ComponentModel.DataAnnotations;
 namespace IKARUSWEB.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public sealed class AuthController : ControllerBase
     {
-        private readonly SignInManager<AppUser> _signIn;
         private readonly UserManager<AppUser> _users;
         private readonly ITokenService _tokens;
 
-        public AuthController(SignInManager<AppUser> signIn, UserManager<AppUser> users, ITokenService tokens)
-        {
-            _signIn = signIn; _users = users; _tokens = tokens;
-        }
+        public AuthController(UserManager<AppUser> users, ITokenService tokens)
+        { _users = users; _tokens = tokens; }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
             var user = await _users.FindByNameAsync(req.UserName);
-            if (user is null) return Unauthorized();
+            if (user is null || !await _users.CheckPasswordAsync(user, req.Password))
+                return Unauthorized(new { title = "Unauthorized", detail = "Geçersiz kimlik bilgileri." });
 
-            var check = await _signIn.CheckPasswordSignInAsync(user, req.Password, lockoutOnFailure: false);
-            if (!check.Succeeded) return Unauthorized();
+            var roles = await _users.GetRolesAsync(user);
 
-            var roles = await _users.GetRolesAsync(user); // IList<string> (normalde null olmaz)
-            var token = _tokens.Create(user, roles ?? Array.Empty<string>()); // emniyet kemeri
+            var ticket = new UserTicket(
+                user.Id,
+                user.TenantId,          // AppUser’da var
+                user.UserName ?? "",
+                roles);
 
-            return Ok(new { access_token = token });
+            var (token, expiresAt) = _tokens.Create(ticket);
+            return Ok(new AuthResponseDto(new AccessTokenDto(token, expiresAt)));
         }
 
-        public sealed record LoginRequest(
-            [Required] string UserName,
-            [Required] string Password
-        );
-
-        [HttpPost("register")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest req)
-        {
-            var user = new AppUser { UserName = req.UserName, Email = req.Email };
-            var result = await _users.CreateAsync(user, req.Password);
-            if (!result.Succeeded) return BadRequest(result.Errors.Select(e => e.Description));
-            return Ok();
-        }
-        public sealed record RegisterRequest(string UserName, string Email, string Password);
+        [HttpPost("logout")]
+        [Authorize]
+        public IActionResult Logout() => NoContent();
     }
+
+    public sealed record LoginRequest(string UserName, string Password);
+    public sealed record AuthResponseDto(AccessTokenDto Data);
+    public sealed record AccessTokenDto(string AccessToken, DateTimeOffset ExpiresAt);
 }

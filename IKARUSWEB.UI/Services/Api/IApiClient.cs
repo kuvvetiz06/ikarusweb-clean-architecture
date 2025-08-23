@@ -1,4 +1,4 @@
-﻿using IKARUSWEB.Application.Mapping;
+﻿using IKARUSWEB.Application.Contracts.Currencies;
 using IKARUSWEB.UI.Models.Api;
 using IKARUSWEB.UI.Models.Currencies;
 

@@ -1,5 +1,5 @@
 ﻿using IKARUSWEB.Application.Common.Results;
-using IKARUSWEB.Application.Mapping;
+using IKARUSWEB.Application.Contracts.Currencies;
 using MediatR;
 using System;
 using System.Collections.Generic;

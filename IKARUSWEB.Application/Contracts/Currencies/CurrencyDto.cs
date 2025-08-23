@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IKARUSWEB.Application.Mapping
+namespace IKARUSWEB.Application.Contracts.Currencies
 {
-
     public sealed class CurrencyDto
     {
         public Guid Id { get; init; }
@@ -15,5 +14,4 @@ namespace IKARUSWEB.Application.Mapping
         public decimal CurrencyMultiplier { get; init; }
         public decimal Rate { get; init; }
     }
-
 }

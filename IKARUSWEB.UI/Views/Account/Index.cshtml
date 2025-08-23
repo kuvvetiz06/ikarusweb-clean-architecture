@@ -1,0 +1,34 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Giriş</h2>
+<div class="mb-3">
+    <label>Kullanıcı Adı</label>
+    <input id="u" class="form-control" />
+</div>
+<div class="mb-3">
+    <label>Şifre</label>
+    <input id="p" type="password" class="form-control" />
+</div>
+<button id="btn" class="btn btn-primary">Giriş</button>
+<ul id="errors" class="text-danger mt-3"></ul>
+
+<script>
+    document.getElementById('btn').onclick = async () => {
+      const r = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ userName: document.getElementById('u').value, password: document.getElementById('p').value })
+      });
+      if (r.status === 204) { location.href = '/Home/Index'; return; }
+      try {
+        const err = await r.json();
+        debugger
+        alert(err?.detail || err?.title || 'Giriş başarısız');
+      } catch { alert('Giriş başarısız'); }
+    };
+</script>
+
