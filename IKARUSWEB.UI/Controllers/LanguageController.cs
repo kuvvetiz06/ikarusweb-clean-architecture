@@ -5,7 +5,7 @@ namespace IKARUSWEB.UI.Controllers
 {
     public class LanguageController : Controller
     {
-        [HttpPost]
+        
         public IActionResult Set(string culture, string returnUrl = "/")
         {
             Response.Cookies.Append(

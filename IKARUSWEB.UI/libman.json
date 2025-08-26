@@ -1,0 +1,34 @@
+{
+  "version": "3.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "jquery-validation-unobtrusive@4.0.0",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
+    },
+    {
+      "library": "jquery.serializeJSON@3.2.1",
+      "destination": "wwwroot/lib/jquery-serialize/"
+    },
+    {
+      "library": "exceljs@4.4.0",
+      "destination": "wwwroot/lib/exceljs/"
+    },
+    {
+      "library": "FileSaver.js@2.0.5",
+      "destination": "wwwroot/lib/file-saver/"
+    },
+    {
+      "library": "globalize@1.7.0",
+      "destination": "wwwroot/lib/globalize/"
+    },
+    {
+      "library": "xlsx@0.18.5",
+      "destination": "wwwroot/lib/exceljs/"
+    },
+    {
+      "library": "axios@1.11.0",
+      "destination": "wwwroot/lib/axios/"
+    }
+  ]
+}

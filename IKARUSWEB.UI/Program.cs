@@ -2,6 +2,8 @@ using IKARUSWEB.UI.Filters;
 using IKARUSWEB.UI.Transformers;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Serialization;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
@@ -12,23 +14,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Localization
 builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
-var supported = new[] { "tr-TR", "en-US" }.Select(c => new CultureInfo(c)).ToArray();
-var rlo = new RequestLocalizationOptions
+builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    DefaultRequestCulture = new("tr-TR"),
-    SupportedCultures = supported,
-    SupportedUICultures = supported,
-    RequestCultureProviders = new IRequestCultureProvider[] {
-    new QueryStringRequestCultureProvider(),
-    new CookieRequestCultureProvider(),
-    new AcceptLanguageHeaderRequestCultureProvider()
-  }
-};
+    var supported = new[] { "tr-TR", "en-US" }
+        .Select(c => new CultureInfo(c)).ToArray();
+    options.DefaultRequestCulture = new("tr-TR");
+    options.SupportedCultures = supported;
+    options.SupportedUICultures = supported;
+
+});
+
 builder.Services.AddControllersWithViews(o =>
 {
     o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
     o.Filters.Add<UnauthorizedRedirectFilter>();
-}).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix).AddDataAnnotationsLocalization();
+}).AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+.AddDataAnnotationsLocalization()
+.AddJsonOptions(opt => opt.JsonSerializerOptions.PropertyNamingPolicy = null)
+.AddViewOptions(y => y.HtmlHelperOptions.ClientValidationEnabled = true)
+.AddNewtonsoftJson(z => z.SerializerSettings.ContractResolver = new DefaultContractResolver())
+.AddRazorRuntimeCompilation();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(o =>
@@ -64,7 +69,7 @@ builder.Services.AddSession();
 var app = builder.Build();
 
 // RequestLocalization
-app.UseRequestLocalization(rlo);
+app.UseRequestLocalization();
 
 if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Home/Error");
 app.UseHttpsRedirection();

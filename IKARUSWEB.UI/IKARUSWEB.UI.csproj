@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.8" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
@@ -14,6 +15,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IKARUSWEB.Application\IKARUSWEB.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\src\components\" />
   </ItemGroup>
 
 </Project>
