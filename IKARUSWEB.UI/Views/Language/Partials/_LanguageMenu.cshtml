@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Builder
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.Extensions.Options
+
+@inject IViewLocalizer Localizer
+@inject IOptions<RequestLocalizationOptions> LocOptions
+@{
+    char characterToRemoveAfter = '(';
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var cultureItems = LocOptions.Value.SupportedUICultures?.Select(c => new SelectListItemWithFlag
+    {
+        Value = c.Name,
+        DisplayName = c.DisplayName.Split(characterToRemoveAfter)[0],
+        Text = c.TwoLetterISOLanguageName.ToUpper(),
+        FlagUrl = c.Name switch
+        {
+            "tr-TR" => "/assets/media/flags/turkey.svg",
+            "en-US" => "/assets/media/flags/united-states.svg",
+        }
+    }).ToList();
+    var currentCulture = requestCulture?.RequestCulture.UICulture.Name;
+    var currentFlag = cultureItems?.FirstOrDefault(c => c.Value == currentCulture)?.FlagUrl ?? string.Empty;
+    var currentLang = cultureItems?.FirstOrDefault(c => c.Value == currentCulture)?.DisplayName ?? string.Empty;
+}
+
+<div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
+    <a href="#" class="menu-link px-5">
+        <span class="menu-title position-relative">
+            @L["Language"]
+            <span class="fs-8 rounded bg-light px-3 py-2 position-absolute translate-middle-y top-50 end-0">
+                @currentLang
+                <img class="w-15px h-15px rounded-1 ms-2" src="@currentFlag" alt="" />
+            </span>
+        </span>
+    </a>
+    <!--begin::Menu sub-->
+    <div class="menu-sub menu-sub-dropdown w-175px py-4">
+        @foreach (var item in cultureItems)
+        {
+            <div class="menu-item px-3">
+                <a href="@Url.Action("Set", "Language", new { culture = item.Value })"
+                   class="menu-link d-flex px-5">
+                    <span class="symbol symbol-20px me-4">
+                        <img class="rounded-1" src="@item.FlagUrl" alt="@item.DisplayName" />
+                    </span>
+                    @item.DisplayName
+                </a>
+            </div>
+        }
+    </div>
+    <!--end::Menu sub-->
+</div>
