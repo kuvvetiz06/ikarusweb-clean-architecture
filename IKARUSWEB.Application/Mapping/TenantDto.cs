@@ -9,6 +9,7 @@ namespace IKARUSWEB.Application.Mapping
     public sealed record TenantDto(
        Guid Id,
        string Name,
+       string Code,
        string Street,
        string City,
        string Country,

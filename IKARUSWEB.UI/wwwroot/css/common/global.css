@@ -1,0 +1,13 @@
+﻿/*#region Tema Ayarları*/
+/* Tema değişirken devexpress bileşenleri şeffaf olur */
+html.dx-pending .dx-viewport {
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+}
+
+/* Normal durumda görünür */
+.dx-viewport {
+    opacity: 1;
+    transition: opacity 0.25s ease-in-out;
+}
+/*#endregion*/

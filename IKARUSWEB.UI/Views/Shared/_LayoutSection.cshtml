@@ -16,7 +16,8 @@
     window.__tenantId = '@User.FindFirst("tenant")?.Value';
     window.__userId = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
 </script>
-<script src="~/assets/js/customize/menu-persist.js"></script>
+<script src="~/js/common/menu-persist.js"></script>
+<script src="~/js/common/general.js"></script>
 @section Header {
     <!--begin::Header-->
     <div id="kt_header" style="" class="header align-items-stretch">
@@ -337,7 +338,7 @@
                                 <!--end::Menu item-->
                                 <!--begin::Menu item-->
                                 <div class="menu-item px-5">
-                                    <a href="@Url.Action("SignOut","Login")" class="menu-link px-5">@L["SignOut"]</a>
+                                    <a href="#" id="Sign-Out" class="menu-link px-5">@L["SignOut"]</a>
                                 </div>
                                 <!--end::Menu item-->
                             </div>

@@ -34,6 +34,7 @@ namespace IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant
 
             var entity = new Tenant(
                 request.Name,
+                request.Code,
                 request.Country,
                 request.City,
                 request.Street,

@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IKARUSWEB.UI.Controllers
 {
+    [AllowAnonymous]
     public class AccountController : Controller
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        [HttpGet("/account/login"), AllowAnonymous]
+        public IActionResult Login(string? returnUrl = null) => View();
+
+        [HttpGet("/account/denied"), AllowAnonymous]
+        public IActionResult Denied() => View();
     }
 }

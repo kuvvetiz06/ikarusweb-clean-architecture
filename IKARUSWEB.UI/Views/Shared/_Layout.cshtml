@@ -22,13 +22,17 @@
     <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
     <link href="/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-    <!--end::Global Stylesheets Bundle-->
+    <link rel="stylesheet" href="~/css/devextreme/dx.common.css" />
+    <link id="dx-theme" rel="stylesheet" href="~/css/devextreme/dx.material.blue.light.compact.css" />
+    <link href="~/css/common/global.css" rel="stylesheet" />
+     <!--end::Global Stylesheets Bundle-->
     <!--begin::Javascript-->
-    <script>var hostUrl = "/assets/";</script>
+  
     <!--begin::Global Javascript Bundle(mandatory for all pages)-->
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
-    <script src="~/assets/js/customize/theme-mode.js"></script>
+    <script src="~/js/common/theme-mode.js"></script>
+    <script src="~/js/common/devextreme-theme-adapter.js"></script>
     <script src="~/lib/devextreme/dx.all.js"></script>
     <script src="~/lib/devextreme/dx.aspnet.data.js"></script>
     <script src="~/lib/devextreme/dx.aspnet.mvc.js"></script>
@@ -36,8 +40,7 @@
     <script src="~/lib/devextreme/localization/dx.messages.tr.js"></script>
     <script src="~/lib/jquery-serialize/jquery.serializejson.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>    
-    <script src="~/lib/axios/axios.min.js"></script>      
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
     <!--end::Global Javascript Bundle-->
     <!--begin::Vendors Javascript(used for this page only)-->
     <script src="~/assets/plugins/custom/fullcalendar/fullcalendar.bundle.js"></script>
@@ -63,10 +66,13 @@
                 <!--end::Header-->
                 <!--begin::Content-->
                 <div class="content d-flex flex-column flex-column-fluid" id="ik_content">
-                    <div class="loadpanelLayout"></div>
-                    <!--begin::ContentBody-->
-                    @RenderBody()
-                    <!--end::ContentBody-->
+                    <div class="d-flex flex-column-fluid">
+                        <div class="p-4">
+                            <!--begin::ContentBody-->
+                            @RenderBody()
+                            <!--end::ContentBody-->
+                        </div>
+                    </div>
                 </div>
                 <!--end::Content-->
                 <!--begin::Footer-->

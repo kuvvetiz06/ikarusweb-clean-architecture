@@ -30,6 +30,7 @@ namespace IKARUSWEB.Infrastructure.Seed
             {
                 tenant = new Tenant(
                     name: "IKARUS HOTEL",
+                    code: "2500",
                     country: "Türkiye",
                     city: "Ankara",
                     street: "Kızılay",
@@ -72,6 +73,7 @@ namespace IKARUSWEB.Infrastructure.Seed
                     UserName = "admin",
                     Email = "admin@ikarus.local",
                     TenantId = tenant.Id,
+                    TenantCode = tenant.Code,
                     EmailConfirmed = true
                 };
                 await _users.CreateAsync(user, "Pass123!");

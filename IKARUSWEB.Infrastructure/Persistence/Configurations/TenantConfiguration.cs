@@ -19,6 +19,7 @@ namespace IKARUSWEB.Infrastructure.Persistence.Configurations
             b.Property(x => x.Name).IsRequired().HasMaxLength(200);
             b.HasIndex(x => x.Name).IsUnique();
 
+            b.Property(x => x.Code).IsRequired().HasMaxLength(6);
             b.Property(x => x.Country).IsRequired().HasMaxLength(100);
             b.Property(x => x.City).IsRequired().HasMaxLength(100);
             b.Property(x => x.Street).IsRequired().HasMaxLength(200);
