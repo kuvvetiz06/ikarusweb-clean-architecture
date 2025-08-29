@@ -9,7 +9,8 @@ namespace IKARUSWEB.Infrastructure.Identity
 {
     public class AppUser : IdentityUser<Guid>
     {
-        public Guid? TenantId { get; set; }           // Kullanıcının oteli/tenant'ı
+        public Guid? TenantId { get; set; }
+        public string? TenantCode { get; set; }
         public string? FullName { get; set; }
     }
 }

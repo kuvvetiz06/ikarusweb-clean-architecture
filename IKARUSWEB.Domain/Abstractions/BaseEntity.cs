@@ -30,6 +30,13 @@ namespace IKARUSWEB.Domain.Abstractions
             CreatedAt = now ?? DateTime.UtcNow;
         }
 
+        public void MarkPassive(string? by = null, DateTime? now = null)
+        {                 
+            IsActive = false;
+            ModifiedBy = by;
+            ModifiedAt = now ?? DateTime.UtcNow;
+        }
+
         public void Touch(string? by = null, DateTime? now = null)
         {
             ModifiedBy = by;

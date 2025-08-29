@@ -16,8 +16,8 @@ namespace IKARUSWEB.Infrastructure.Persistence
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
             // Örnek fallback. Gerçekte API/appsettings.json kullanılacak.
-            var cs = Environment.GetEnvironmentVariable("IKARUSWEB_ConnectionString")
-                     ?? "Server = HUSEYINGOKDEMR\\SQLEXPRESS; TrustServerCertificate=True; Database = IKARUSWEB; User Id = sa; Password = Gok1905demir+";
+            var cs = Environment.GetEnvironmentVariable("DefaultConnection")
+                     ?? "Server = HG; TrustServerCertificate=True; Database = IKARUSWEB; User Id = sa; Password = 12345678;";
 
             optionsBuilder.UseSqlServer(cs);
 

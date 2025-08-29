@@ -18,8 +18,10 @@ namespace IKARUSWEB.Domain.Entities
         public IReadOnlyCollection<Room> Rooms => _rooms.AsReadOnly();
 
         private RoomBedType() { }
-        public RoomBedType(string name, string? code = null, string? description = null)
-        { Name = name; Code = code?.Trim()?.ToUpperInvariant(); Description = description; }
+        public RoomBedType(Guid tenantId, string name, string? code = null, string? description = null)
+        { TenantId = tenantId; Name = name; Code = code?.Trim()?.ToUpperInvariant(); Description = description; }
+
+        public RoomBedType Rename(string name) { Name = name; Touch(); return this; }
     }
 }
 

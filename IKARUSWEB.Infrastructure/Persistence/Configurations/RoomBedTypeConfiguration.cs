@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace IKARUSWEB.Infrastructure.Persistence.Configurations
 {
     public sealed class RoomBedTypeConfiguration : IEntityTypeConfiguration<RoomBedType>
-    {
+    {        
         public void Configure(EntityTypeBuilder<RoomBedType> b)
         {
             b.ToTable("RoomBedTypes");
@@ -18,13 +18,19 @@ namespace IKARUSWEB.Infrastructure.Persistence.Configurations
 
             b.Property(x => x.TenantId).IsRequired();
             b.Property(x => x.Name).IsRequired().HasMaxLength(100);
-            b.Property(x => x.Code).HasMaxLength(20);
+            b.Property(x => x.Code).HasMaxLength(32);
             b.Property(x => x.Description).HasMaxLength(500);
 
-            b.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
-            b.HasIndex(x => new { x.TenantId, x.Code }).IsUnique().HasFilter("[Code] IS NOT NULL");
+            b.HasQueryFilter(x => !x.IsDeleted);
 
-            b.HasOne<Tenant>().WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Restrict);
+            
+            b.HasIndex(x => new { x.TenantId, x.Name })
+             .IsUnique()
+             .HasFilter("[IsDeleted] = 0"); // SQL Server
+
+            b.HasIndex(x => new { x.TenantId, x.Code })
+             .IsUnique()
+             .HasFilter("[IsDeleted] = 0 AND [Code] IS NOT NULL");
         }
     }
 }

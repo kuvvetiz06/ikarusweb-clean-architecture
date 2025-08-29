@@ -10,6 +10,7 @@ namespace IKARUSWEB.Domain.Entities
     public sealed class Tenant : BaseEntity
     {
         public string Name { get; private set; } = null!;
+        public string Code { get; private set; } = null!;
         public string Country { get; private set; } = null!;
         public string City { get; private set; } = null!;
         public string Street { get; private set; } = null!;
@@ -23,10 +24,11 @@ namespace IKARUSWEB.Domain.Entities
         //EF Core için boş constructor gerekli
         private Tenant() { }
 
-        public Tenant(string name, string country, string city, string street,
+        public Tenant(string name,string code, string country, string city, string street,
                    string timeZone, string defaultCulture)
         {
             Name = name;
+            Code = code.Trim();
             Country = country;
             City = city;
             Street = street;

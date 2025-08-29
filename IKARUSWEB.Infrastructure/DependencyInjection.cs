@@ -1,11 +1,13 @@
 ﻿using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Abstractions.Repositories;
+using IKARUSWEB.Application.Abstractions.Repositories.RoomBedTypeRepositories;
 using IKARUSWEB.Application.Abstractions.Security;
 using IKARUSWEB.Infrastructure.Auth;
 using IKARUSWEB.Infrastructure.Identity;
 using IKARUSWEB.Infrastructure.Persistence;
 using IKARUSWEB.Infrastructure.Persistence.Interceptors;
 using IKARUSWEB.Infrastructure.Persistence.Repositories;
+using IKARUSWEB.Infrastructure.Persistence.Repositories.RoomBedTypeRepositories;
 using IKARUSWEB.Infrastructure.Seed;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +42,7 @@ namespace IKARUSWEB.Infrastructure
             services.AddScoped<AuditingSaveChangesInterceptor>();
             services.AddScoped<TenantAssignmentInterceptor>();
 
-            //services.AddScoped<DevSeeder>();
+            services.AddScoped<DevSeeder>();
 
             services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>()); // SaveChanges için
 
@@ -57,6 +59,10 @@ namespace IKARUSWEB.Infrastructure
                 opt.AddInterceptors(sp.GetRequiredService<AuditingSaveChangesInterceptor>());
                 opt.AddInterceptors(sp.GetRequiredService<TenantAssignmentInterceptor>());
             });
+
+            //Repositories
+            services.AddScoped<IRoomBedTypeReadRepository, RoomBedTypeReadRepository>();
+            services.AddScoped<IRoomBedTypeWriteRepository, RoomBedTypeWriteRepository>();
 
             // IAppDbContext portu (repo’lar commit için kullanacak)
             services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());

@@ -15,7 +15,7 @@ namespace IKARUSWEB.Infrastructure.Identity
 
         public CurrentTenant(IHttpContextAccessor http)
         {
-            var tid = http.HttpContext?.User?.FindFirst("tenantId")?.Value;
+            var tid = http.HttpContext?.User?.FindFirst("tenant_id")?.Value;
             TenantId = Guid.TryParse(tid, out var g) ? g : null;
         }
     }

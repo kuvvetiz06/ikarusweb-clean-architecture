@@ -20,5 +20,7 @@ namespace IKARUSWEB.Domain.Entities
         private RoomLocation() { }
         public RoomLocation(string name, string? code = null, string? description = null)
         { Name = name; Code = code?.Trim(); Description = description; }
+
+        public RoomLocation Rename(string name) { Name = name; Touch(); return this; }
     }
 }

@@ -1,20 +1,11 @@
 // /wwwroot/js/core/http.js (ESM)
-// NOTE: JWT/Tenant/UserID/Claims are injected on the backend (YARP + Session).
-// We DO NOT add headers here. Centralized error handling only.
-
-import { toastError } from "./notify.js";
-import { t } from "./i18n.js";
+// Backend (YARP + Session) injects JWT/Tenant/UserID/Claims. No client-side headers.
+// Centralized SweetAlert error handling.
 
 const axiosRef = window.axios;
-if (!axiosRef) {
-  console.error("axios not found. Add https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js before this file.");
-}
+if (!axiosRef) console.error("axios missing. Load https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js");
 
-// Normalize API responses into: { success, message, data, errors?, status? }
-const normalize = (resp) => {
-  if (resp?.data && typeof resp.data === "object") return resp.data;
-  return { success: true, message: null, data: resp?.data ?? null };
-};
+const normalize = (resp) => (resp?.data && typeof resp.data === "object") ? resp.data : ({ success: true, message: null, data: resp?.data ?? null });
 
 export const http = axiosRef.create({
   baseURL: "/api",
@@ -22,38 +13,20 @@ export const http = axiosRef.create({
   headers: { "X-Requested-With": "XMLHttpRequest" }
 });
 
-http.interceptors.request.use(
-  (config) => config,
-  (error) => Promise.reject(error)
-);
-
 http.interceptors.response.use(
   (response) => normalize(response),
   (error) => {
     const status = error?.response?.status;
     const payload = error?.response?.data;
-    const message =
-      payload?.message ||
-      payload?.title ||
-      error?.message ||
-      t("UnexpectedError");
+    const message = payload?.message || payload?.title || error?.message || "Beklenmeyen bir hata oluştu.";
 
     if (status === 400 && payload?.errors) {
-      const lines = Object.entries(payload.errors).flatMap(([k, arr]) =>
-        (arr || []).map((m) => `${k}: ${m}`)
-      );
-      toastError(lines.join("\n"));
+      const lines = Object.entries(payload.errors).flatMap(([k, arr]) => (arr || []).map((m) => `${k}: ${m}`));
+      Swal.fire({ icon: "error", html: `<pre style="text-align:left;white-space:pre-wrap">${lines.join("\n")}</pre>` });
     } else {
-      toastError(message);
+      Swal.fire({ icon: "error", text: message });
     }
-
-    return Promise.resolve({
-      success: false,
-      message,
-      data: null,
-      errors: payload?.errors ?? null,
-      status
-    });
+    return Promise.resolve({ success: false, message, data: null, errors: payload?.errors ?? null, status });
   }
 );
 

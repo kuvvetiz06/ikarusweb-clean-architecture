@@ -23,8 +23,12 @@ namespace IKARUSWEB.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
-            var user = await _users.FindByNameAsync(req.UserName);
-            if (user is null || !await _users.CheckPasswordAsync(user, req.Password))
+            
+            var user = await _users.FindByNameAsync(req.UserName.Trim());
+            
+            if (user is null || !await _users.CheckPasswordAsync(user, req.Password.Trim()))
+                return Unauthorized(new { title = "Unauthorized", detail = "Geçersiz kimlik bilgileri." });
+            if (user.TenantCode != req.TenantCode.Trim())
                 return Unauthorized(new { title = "Unauthorized", detail = "Geçersiz kimlik bilgileri." });
 
             var roles = await _users.GetRolesAsync(user);
@@ -44,7 +48,7 @@ namespace IKARUSWEB.API.Controllers
         public IActionResult Logout() => NoContent();
     }
 
-    public sealed record LoginRequest(string UserName, string Password);
+    public sealed record LoginRequest(string UserName, string Password,string TenantCode);
     public sealed record AuthResponseDto(AccessTokenDto Data);
     public sealed record AccessTokenDto(string AccessToken, DateTimeOffset ExpiresAt);
 }

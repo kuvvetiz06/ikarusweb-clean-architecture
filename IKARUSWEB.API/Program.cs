@@ -108,9 +108,9 @@ if (app.Environment.IsDevelopment())
 
 
     //Dummy data
-    //using var scope = app.Services.CreateScope();
-    //var seeder = scope.ServiceProvider.GetRequiredService<DevSeeder>();
-    //await seeder.RunAsync();
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DevSeeder>();
+    await seeder.RunAsync();
 }
 
 app.UseMiddleware<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
