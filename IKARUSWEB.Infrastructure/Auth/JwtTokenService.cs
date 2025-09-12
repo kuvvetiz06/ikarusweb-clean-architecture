@@ -1,17 +1,26 @@
 ﻿using IKARUSWEB.Application.Abstractions.Security;
 using IKARUSWEB.Application.Common.Security;
+using IKARUSWEB.Domain.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using IKARUSWEB.Infrastructure.Persistence;
+
 
 namespace IKARUSWEB.Infrastructure.Auth
 {
     public sealed class JwtTokenService : ITokenService
     {
         private readonly TokenOptions _opt;
-        public JwtTokenService(IOptions<TokenOptions> opt) => _opt = opt.Value;
+        private readonly AppDbContext _db;
+        public JwtTokenService(IOptions<TokenOptions> opt, AppDbContext db)
+        {
+            _opt = opt.Value; _db = db;
+        }
 
         public (string token, DateTimeOffset expiresAt) Create(UserTicket user)
         {
@@ -41,6 +50,52 @@ namespace IKARUSWEB.Infrastructure.Auth
 
             var token = new JwtSecurityTokenHandler().WriteToken(jwt);
             return (token, new DateTimeOffset(exp, TimeSpan.Zero));
+        }
+
+        public async Task<(string refreshToken, DateTimeOffset expiresAt)> IssueRefreshAsync(Guid userId, Guid tenantId, CancellationToken ct = default)
+        {
+            var bytes = RandomNumberGenerator.GetBytes(32);
+            var token = Convert.ToBase64String(bytes); // pratik; prod'da hashleyerek saklayabilirsin
+            var exp = DateTimeOffset.UtcNow.AddDays(_opt.RefreshTokenDays);
+
+            var rt = new RefreshToken(userId, tenantId, token, exp);
+            _db.RefreshTokens.Add(rt);
+            await _db.SaveChangesAsync(ct);
+
+            return (token, exp);
+        }
+
+        public async Task<(bool ok, RefreshToken? token)> ValidateRefreshAsync(string token, CancellationToken ct = default)
+        {
+            var rt = await _db.RefreshTokens.AsTracking()
+                .FirstOrDefaultAsync(x => x.Token == token, ct);
+
+            if (rt is null || !rt.IsActive) return (false, null);
+            return (true, rt);
+        }
+
+        public async Task<(string newToken, DateTimeOffset newExp)> RotateRefreshAsync(RefreshToken current, CancellationToken ct = default)
+        {
+            var bytes = RandomNumberGenerator.GetBytes(32);
+            var newToken = Convert.ToBase64String(bytes);
+            var newExp = DateTimeOffset.UtcNow.AddDays(_opt.RefreshTokenDays);
+
+            current.RotateTo(newToken);
+            var rtNew = new RefreshToken(current.UserId, current.TenantId, newToken, newExp);
+            _db.RefreshTokens.Add(rtNew);
+            await _db.SaveChangesAsync(ct);
+
+            return (newToken, newExp);
+        }
+
+        public async Task RevokeRefreshAsync(string token, CancellationToken ct = default)
+        {
+            var rt = await _db.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token, ct);
+            if (rt is not null && rt.RevokedAt is null)
+            {
+                rt.Revoke();
+                await _db.SaveChangesAsync(ct);
+            }
         }
     }
 }

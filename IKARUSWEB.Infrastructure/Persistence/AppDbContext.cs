@@ -1,6 +1,7 @@
 ﻿using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Domain.Abstractions;
 using IKARUSWEB.Domain.Entities;
+using IKARUSWEB.Domain.Security;
 using IKARUSWEB.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -29,6 +30,7 @@ namespace IKARUSWEB.Infrastructure.Persistence
         public DbSet<RoomBedType> RoomBedTypes => Set<RoomBedType>();
         public DbSet<RoomLocation> RoomLocations => Set<RoomLocation>();
         public DbSet<Room> Rooms => Set<Room>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
