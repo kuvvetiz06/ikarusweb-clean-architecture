@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using NetMediaTypeHeaderValue = Microsoft.Net.Http.Headers.MediaTypeHeaderValue;
 using HttpMediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
 
@@ -36,7 +37,7 @@ public static class ApiProxyHandler
         var res1 = await SendUpstreamAsync(ctx, url, invoker, body, attachBearer: true, ct);
         if (res1.StatusCode != System.Net.HttpStatusCode.Unauthorized)
         {
-            await CopyResponseAsync(ctx, res1, ct);
+            await CopyResponseAsync(ctx, res1);
             return;
         }
 
@@ -53,7 +54,7 @@ public static class ApiProxyHandler
 
         // 3) Başarılı refresh sonrası tek sefer retry
         var res2 = await SendUpstreamAsync(ctx, url, invoker, body, attachBearer: true, ct);
-        await CopyResponseAsync(ctx, res2, ct);
+        await CopyResponseAsync(ctx, res2);
     }
 
     // Upstream'e tek istek gönder (opsiyonel Bearer ekle)
@@ -158,67 +159,23 @@ public static class ApiProxyHandler
         }
     }
 
-    private static async Task CopyResponseAsync(HttpContext ctx, HttpResponseMessage upstream, CancellationToken ct)
+    private static async Task CopyResponseAsync(HttpContext ctx, HttpResponseMessage resp)
     {
-        // Status code
-        ctx.Response.StatusCode = (int)upstream.StatusCode;
+        ctx.Response.StatusCode = (int)resp.StatusCode;
 
-        // Headers (genel)
-        foreach (var header in upstream.Headers)
+        foreach (var h in resp.Headers)
+            ctx.Response.Headers[h.Key] = h.Value.ToArray();
+
+        if (resp.Content != null)
         {
-            // Set-Cookie çoklu olabilir -> Append
-            if (string.Equals(header.Key, HeaderNames.SetCookie, StringComparison.OrdinalIgnoreCase))
-            {
-                foreach (var v in header.Value) ctx.Response.Headers.Append(header.Key, v);
-            }
-            else
-            {
-                ctx.Response.Headers[header.Key] = header.Value.ToArray();
-            }
+            foreach (var h in resp.Content.Headers)
+                ctx.Response.Headers[h.Key] = h.Value.ToArray();
+
+            ctx.Response.Headers.Remove("transfer-encoding");
+            await resp.Content.CopyToAsync(ctx.Response.Body);
         }
-
-        // Content headers (Content-Type, Content-Length, etc.)
-        if (upstream.Content != null)
-        {
-            foreach (var header in upstream.Content.Headers)
-            {
-                if (string.Equals(header.Key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Kestrel Content-Length yönetiyor; varsa set edebiliriz ama güvenli tarafta kalalım
-                    ctx.Response.Headers[header.Key] = header.Value.ToArray();
-                }
-                else
-                {
-                    ctx.Response.Headers[header.Key] = header.Value.ToArray();
-                }
-            }
-        }
-
-        // HTTP/1.1 hop-by-hop header'ları çıkar (aksi halde Kestrel şikayet edebilir)
-        ctx.Response.Headers.Remove(HeaderNames.TransferEncoding);
-        ctx.Response.Headers.Remove("Connection");
-        ctx.Response.Headers.Remove("Keep-Alive");
-        ctx.Response.Headers.Remove("Proxy-Connection");
-        ctx.Response.Headers.Remove("TE");
-        ctx.Response.Headers.Remove("Trailer");
-        ctx.Response.Headers.Remove("Upgrade");
-
-        // Body
-        if (upstream.Content != null)
-            await upstream.Content.CopyToAsync(ctx.Response.Body, ct);
     }
 
-    private static string? GetRefreshFromSetCookie(IEnumerable<string> setCookies)
-    {
-        // Örnek: "refresh_token=xxxx; Path=/api/auth; HttpOnly; Secure; SameSite=Lax; Expires=..."
-        var rx = new Regex(@"(?:^|;\s*)refresh_token=([^;]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        foreach (var sc in setCookies)
-        {
-            var m = rx.Match(sc);
-            if (m.Success)
-                return Uri.UnescapeDataString(m.Groups[1].Value);
-        }
-        return null;
-    }
+
 
 }

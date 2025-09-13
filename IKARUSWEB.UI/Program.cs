@@ -95,7 +95,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.LoginPath = "/account/login";
         o.LogoutPath = "/account/logout";
         o.AccessDeniedPath = "/account/denied";
-        o.SlidingExpiration = false;
+        o.SlidingExpiration = true;
         o.ExpireTimeSpan = TimeSpan.FromHours(1);
 
         o.Events = new CookieAuthenticationEvents
@@ -156,7 +156,9 @@ builder.Services.AddSingleton<HttpMessageInvoker>(_ =>
     return new HttpMessageInvoker(handler, disposeHandler: true);
 });
 
-builder.Services.AddReverseProxy();
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms<AccessTokenTransform>();
 
 
 var app = builder.Build();
