@@ -5,7 +5,6 @@ using IKARUSWEB.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace IKARUSWEB.API.Controllers
 {
@@ -16,36 +15,91 @@ namespace IKARUSWEB.API.Controllers
         private readonly UserManager<AppUser> _users;
         private readonly ITokenService _tokens;
 
+
+        private void SetRefreshCookie(HttpContext http, string token, DateTimeOffset exp)
+        {
+            http.Response.Cookies.Append("refresh_token", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = http.Request.IsHttps, 
+                SameSite = SameSiteMode.Lax,
+                Expires = exp,
+                Path = "/api/auth"
+            });
+        }
+        private static void ClearRefreshCookie(HttpContext http)
+        {
+            http.Response.Cookies.Append("refresh_token", "",
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = http.Request.IsHttps,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UnixEpoch,
+                    Path = "/api/auth"
+                });
+        }
         public AuthController(UserManager<AppUser> users, ITokenService tokens)
         { _users = users; _tokens = tokens; }
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginRequest req)
+        public async Task<IActionResult> Login([FromBody] LoginRequest req, CancellationToken ct)
         {
-            
             var user = await _users.FindByNameAsync(req.UserName.Trim());
-            
             if (user is null || !await _users.CheckPasswordAsync(user, req.Password.Trim()))
                 return Unauthorized(new { title = "Unauthorized", detail = "Geçersiz kimlik bilgileri." });
             if (user.TenantCode != req.TenantCode.Trim())
                 return Unauthorized(new { title = "Unauthorized", detail = "Geçersiz kimlik bilgileri." });
 
             var roles = await _users.GetRolesAsync(user);
+            var ticket = new UserTicket(user.Id, user.TenantId, user.UserName ?? "", roles);
 
-            var ticket = new UserTicket(
-                user.Id,
-                user.TenantId,          // AppUser’da var
-                user.UserName ?? "",
-                roles);
+            var (access, accessExp) = _tokens.Create(ticket);
+            var (refresh, refreshExp) = await _tokens.IssueRefreshAsync(user.Id, (Guid)user.TenantId, ct);
 
-            var (token, expiresAt) = _tokens.Create(ticket);
-            return Ok(new AuthResponseDto(new AccessTokenDto(token, expiresAt)));
+            SetRefreshCookie(HttpContext, refresh, refreshExp);
+
+            return Ok(new AuthResponseDto(new AccessTokenDto(access, accessExp)));
+        }
+
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Refresh(CancellationToken ct)
+        {
+            var refresh = Request.Cookies["refresh_token"];
+            if (string.IsNullOrWhiteSpace(refresh))
+                return Unauthorized(new { title = "Unauthorized", detail = "No refresh token." });
+
+            var (ok, current) = await _tokens.ValidateRefreshAsync(refresh, ct);
+            if (!ok || current is null)
+                return Unauthorized(new { title = "Unauthorized", detail = "Invalid refresh token." });
+
+            // Access üret
+            var roles = await _users.GetRolesAsync(await _users.FindByIdAsync(current.UserId.ToString()));
+            var ticket = new UserTicket(current.UserId, current.TenantId, "", roles);
+            var (access, accessExp) = _tokens.Create(ticket);
+
+            // Refresh rotate
+            var (newRefresh, newExp) = await _tokens.RotateRefreshAsync(current, ct);
+            SetRefreshCookie(HttpContext, newRefresh, newExp);
+
+            return Ok(new AuthResponseDto(new AccessTokenDto(access, accessExp)));
         }
 
         [HttpPost("logout")]
-        [Authorize]
-        public IActionResult Logout() => NoContent();
+        [AllowAnonymous]
+        public async Task<IActionResult> Logout(CancellationToken ct)
+        {
+            var refresh = Request.Cookies["refresh_token"];
+            if (!string.IsNullOrWhiteSpace(refresh))
+            {
+                await _tokens.RevokeRefreshAsync(refresh, ct);
+                ClearRefreshCookie(HttpContext);
+            }
+            return NoContent();
+        }
+        
     }
 
     public sealed record LoginRequest(string UserName, string Password,string TenantCode);

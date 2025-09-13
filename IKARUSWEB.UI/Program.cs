@@ -1,6 +1,8 @@
 using IKARUSWEB.UI.Filters;
 using IKARUSWEB.UI.Helper;
+using IKARUSWEB.UI.Infrastructure;
 using IKARUSWEB.UI.Infrastructure.Auth;
+using IKARUSWEB.UI.Infrastructure.Proxy;
 using IKARUSWEB.UI.Transformers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -93,7 +95,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.LoginPath = "/account/login";
         o.LogoutPath = "/account/logout";
         o.AccessDeniedPath = "/account/denied";
-        o.SlidingExpiration = false;
+        o.SlidingExpiration = true;
         o.ExpireTimeSpan = TimeSpan.FromHours(1);
 
         o.Events = new CookieAuthenticationEvents
@@ -154,7 +156,9 @@ builder.Services.AddSingleton<HttpMessageInvoker>(_ =>
     return new HttpMessageInvoker(handler, disposeHandler: true);
 });
 
-builder.Services.AddReverseProxy();
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms<AccessTokenTransform>();
 
 
 var app = builder.Build();
@@ -175,7 +179,8 @@ app.Use(async (ctx, next) =>
 {
     if (ctx.Request.Path.StartsWithSegments("/api") &&
         !ctx.Request.Path.StartsWithSegments("/api/auth/login") &&
-        !ctx.Request.Path.StartsWithSegments("/api/auth/logout"))
+        !ctx.Request.Path.StartsWithSegments("/api/auth/logout") &&
+        !ctx.Request.Path.StartsWithSegments("/api/auth/refresh"))
     {
         // Session'dan token oku
         var token = ctx.Session.GetString("access_token");
@@ -214,6 +219,8 @@ app.MapPost("/api/auth/login", async ctx =>
     if (err != ForwarderError.None) ctx.Response.StatusCode = 502;
 }).AllowAnonymous();
 
+
+
 // Logout
 app.MapPost("/api/auth/logout", async context =>
 {
@@ -228,8 +235,7 @@ app.MapPost("/api/auth/logout", async context =>
 // Genel /api proxy (SONRA)
 app.Map("/api/{**catch-all}", async ctx =>
 {
-    var err = await forwarder.SendAsync(ctx, apiBase, invoker, fwdCfg);
-    if (err != ForwarderError.None) ctx.Response.StatusCode = 502;
+    await ApiProxyHandler.ProxyAsync(ctx, apiBase, invoker, ctx.RequestAborted);
 }).AllowAnonymous();
 
 
