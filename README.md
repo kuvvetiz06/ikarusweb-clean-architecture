@@ -65,15 +65,6 @@ UI (ASP.NET Core MVC) ── YARP/BFF (server-side proxy & composition)
 - Her PR **tek amaç**: küçük, okunabilir, geri alma kolay.
 - Şablon (aşağıdaki PR template ile uyumlu).
 
-## Checklist
-- [ ] Kapsam (tek amaç) net
-- [ ] Katman bağımlılıkları doğru
-- [ ] NuGet hedef sürümler uyumlu
-- [ ] Nullable ref types & analyzers temiz
-- [ ] Migration/Config güncel (varsa)
-- [ ] UI/Endpoint örnek istek eklendi (postman veya http file)
-- [ ] Docs güncellendi (gerekirse)
-
 ## Özet
 <!-- PR-00xx: Kısa açıklama -->
 
