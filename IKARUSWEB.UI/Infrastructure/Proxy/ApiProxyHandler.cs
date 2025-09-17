@@ -20,6 +20,7 @@ public static class ApiProxyHandler
     public static async Task ProxyAsync(HttpContext ctx, string apiBase, HttpMessageInvoker invoker, CancellationToken ct)
     {
         // Login/Logout/Refresh endpointleri bu handler'a düşmemeli (Program.cs'de ayrı map'liyoruz)
+        
         var url = apiBase.TrimEnd('/') + ctx.Request.Path + ctx.Request.QueryString.Value;
 
         // Body'yi iki kez gönderebilelim diye bufferla (POST/PUT/PATCH)
@@ -126,7 +127,7 @@ public static class ApiProxyHandler
 
         var id = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(id);
-        var props = new AuthenticationProperties { IsPersistent = true, ExpiresUtc = exp };
+        var props = new AuthenticationProperties { IsPersistent = false, ExpiresUtc = exp };
         await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
 
         return true;

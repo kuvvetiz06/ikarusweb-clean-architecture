@@ -11,7 +11,7 @@ namespace IKARUSWEB.Application.Common.Security
         public string Issuer { get; set; } = "";
         public string Audience { get; set; } = "";
         public string Key { get; set; } = "";
-        public int AccessTokenMinutes { get; set; } = 1;
-        public int RefreshTokenDays { get; set; } = 14;
+        public int AccessTokenMinutes { get; set; }
+        public int RefreshTokenDays { get; set; }
     }
 }

@@ -27,10 +27,16 @@ namespace IKARUSWEB.UI.Infrastructure
                     var principal = ctx.User;
                     if (principal?.Identity?.IsAuthenticated == true)
                     {
+                        //var props = new AuthenticationProperties
+                        //{
+                        //    IsPersistent = true,
+                        //    ExpiresUtc = exp
+                        //};
+
                         var props = new AuthenticationProperties
                         {
-                            IsPersistent = true,
-                            ExpiresUtc = exp
+                            IsPersistent = false
+                            // ExpiresUtc set ETME; sliding expiration yeterli
                         };
                         await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
                     }

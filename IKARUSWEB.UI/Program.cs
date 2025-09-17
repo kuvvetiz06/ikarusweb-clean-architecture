@@ -1,8 +1,8 @@
-using IKARUSWEB.UI.Filters;
+ï»¿//UI.Program.cs 
 using IKARUSWEB.UI.Helper;
 using IKARUSWEB.UI.Infrastructure;
-using IKARUSWEB.UI.Infrastructure.Auth;
 using IKARUSWEB.UI.Infrastructure.Proxy;
+using IKARUSWEB.UI.Infrastructure.Proxy.Middleware;
 using IKARUSWEB.UI.Transformers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Shared;
 using Newtonsoft.Json.Serialization;
 using StackExchange.Redis;
 using System.Globalization;
@@ -23,31 +24,9 @@ using Yarp.ReverseProxy.Forwarder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- Redis var mý? ---
-var redisConn = builder.Configuration["Redis:Configuration"];
-var useRedis = !string.IsNullOrWhiteSpace(redisConn);
-var ticketPrefix = (builder.Configuration["Redis:InstanceName"] ?? "ikarusweb:") + "auth:";
-// --- Cache/Session ---
-if (useRedis)
-{
-    builder.Services.AddStackExchangeRedisCache(o =>
-    {
-        o.Configuration = redisConn;                       // örn: "localhost:6379,abortConnect=false"
-        o.InstanceName = builder.Configuration["Redis:InstanceName"] ?? "ikarusweb:";
-    });
 
-    // DataProtection anahtarlarýný paylaþýmlý tutmak sadece çoklu instance/prod için gerekli
-    var cfg = ConfigurationOptions.Parse(redisConn);
-    cfg.AbortOnConnectFail = false;
-    var mux = ConnectionMultiplexer.Connect(cfg);
-    builder.Services.AddDataProtection()
-        .PersistKeysToStackExchangeRedis(mux, "ikarusweb:keys");
-}
-else
-{
-    // DEV fallback
-    builder.Services.AddDistributedMemoryCache();
-}
+builder.Services.AddDistributedMemoryCache();
+
 // Localization
 builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -63,7 +42,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddControllersWithViews(o =>
 {
     o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
-    // Global authorize için **ya bunu kullan, ya FallbackPolicy** (ikisi birden deðil)
+    // Global authorize iÃ§in **ya bunu kullan, ya FallbackPolicy** (ikisi birden deÄŸil)
     o.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser().Build()));
 })
@@ -98,27 +77,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.SlidingExpiration = true;
         o.ExpireTimeSpan = TimeSpan.FromHours(1);
 
+        // /api isteklerinde 302â†’401 davranÄ±ÅŸÄ± kalsÄ±n istiyorsan yalnÄ±zca bu kÄ±smÄ± bÄ±rak:
         o.Events = new CookieAuthenticationEvents
         {
-            // Her istekten belirli aralýklarla cookie'yi doðrula
-            OnValidatePrincipal = ctx =>
-            {
-                var expStr = ctx.Principal?.FindFirst("token_exp")?.Value;
-                if (long.TryParse(expStr, out var unix))
-                {
-                    var exp = DateTimeOffset.FromUnixTimeSeconds(unix);
-                    if (DateTimeOffset.UtcNow >= exp)
-                    {
-                        // Token süresi geçti: UI cookie'yi düþür
-                        ctx.RejectPrincipal();
-                        return ctx.HttpContext.SignOutAsync(
-                            CookieAuthenticationDefaults.AuthenticationScheme);
-                    }
-                }
-                return Task.CompletedTask;
-            },
-
-            // /api isteklerinde 302 yerine 401
             OnRedirectToLogin = ctx =>
             {
                 if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
@@ -130,15 +91,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                 return Task.CompletedTask;
             }
         };
-
-        if (useRedis)
-        {
-            var cache = builder.Services.BuildServiceProvider().GetRequiredService<IDistributedCache>();
-            o.SessionStore = new RedisTicketStore(cache, ticketPrefix);
-        }
     });
 
-// YARP forwarder için HttpMessageInvoker (YARP’ýn önerdiði pattern)
+// YARP forwarder iÃ§in HttpMessageInvoker (YARPâ€™Ä±n Ã¶nerdiÄŸi pattern)
 builder.Services.AddSingleton<HttpMessageInvoker>(_ =>
 {
     var handler = new SocketsHttpHandler
@@ -174,36 +129,9 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<ApiRefreshRetryMiddleware>();
 
-app.Use(async (ctx, next) =>
-{
-    if (ctx.Request.Path.StartsWithSegments("/api") &&
-        !ctx.Request.Path.StartsWithSegments("/api/auth/login") &&
-        !ctx.Request.Path.StartsWithSegments("/api/auth/logout") &&
-        !ctx.Request.Path.StartsWithSegments("/api/auth/refresh"))
-    {
-        // Session'dan token oku
-        var token = ctx.Session.GetString("access_token");
-        if (!string.IsNullOrWhiteSpace(token))
-        {
-            // JWT exp'ini hýzlýca decode et (imza doðrulamadan)
-            var exp = GetJwtExpires.Get(token); // DateTimeOffset?
-            if (exp.HasValue && DateTimeOffset.UtcNow >= exp.Value)
-            {
-                // Süresi bitti: UI'ý düþür, 401 dön
-                await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                ctx.Session.Clear();
-                ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return;
-            }
-            ctx.Request.Headers.Authorization = $"Bearer {token}";
-        }
-    }
-    await next();
-});
-
-
-var apiBase = (app.Configuration["Api:BaseUrl"] ?? "https://localhost:44340").TrimEnd('/'); 
+var apiBase = (app.Configuration["Api:BaseUrl"] ?? "https://localhost:44340").TrimEnd('/');
 var invoker = app.Services.GetRequiredService<HttpMessageInvoker>();
 var forwarder = app.Services.GetRequiredService<IHttpForwarder>();
 var fwdCfg = new ForwarderRequestConfig { ActivityTimeout = TimeSpan.FromSeconds(100) };
@@ -212,14 +140,19 @@ app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 
 
 
-// Login özel endpoint (ÖNCE)
+// Login Ã¶zel endpoint (Ã–NCE)
 app.MapPost("/api/auth/login", async ctx =>
 {
     var err = await forwarder.SendAsync(ctx, apiBase, invoker, fwdCfg, new LoginCaptureTransformer());
     if (err != ForwarderError.None) ctx.Response.StatusCode = 502;
 }).AllowAnonymous();
 
-
+// Refresh (artÄ±k Ã¶zel map'li - RefreshCaptureTransformer devrede)
+app.MapPost("/api/auth/refresh", async ctx =>
+{
+    var err = await forwarder.SendAsync(ctx, apiBase, invoker, fwdCfg, new RefreshCaptureTransformer());
+    if (err != ForwarderError.None) ctx.Response.StatusCode = 502;
+}).AllowAnonymous();
 
 // Logout
 app.MapPost("/api/auth/logout", async context =>
@@ -232,16 +165,7 @@ app.MapPost("/api/auth/logout", async context =>
     if (err != ForwarderError.None) context.Response.StatusCode = StatusCodes.Status204NoContent;
 }).AllowAnonymous();
 
-// Genel /api proxy (SONRA)
-app.Map("/api/{**catch-all}", async ctx =>
-{
-    await ApiProxyHandler.ProxyAsync(ctx, apiBase, invoker, ctx.RequestAborted);
-}).AllowAnonymous();
-
-
-
-
-
+app.MapReverseProxy();
 
 app.Run();
 

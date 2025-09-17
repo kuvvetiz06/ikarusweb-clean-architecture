@@ -1,6 +1,7 @@
 ﻿using IKARUSWEB.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +16,16 @@ namespace IKARUSWEB.Infrastructure.Persistence
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-            // Örnek fallback. Gerçekte API/appsettings.json kullanılacak.
-            var cs = Environment.GetEnvironmentVariable("DefaultConnection")
-                     ?? "Server = HG; TrustServerCertificate=True; Database = IKARUSWEB; User Id = sa; Password = 12345678;";
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../IKARUSWEB.API");
+            var config = new ConfigurationBuilder()
+                .SetBasePath(basePath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.Development.json", optional: true) // varsa Development ayarlarını da ekle
+                .Build();
 
-            optionsBuilder.UseSqlServer(cs);
+            var connectionString = config.GetConnectionString("DefaultConnection");
+
+            optionsBuilder.UseSqlServer(connectionString);
 
             // Basit clock
             var tenant = new DesignTimeTenantProvider();

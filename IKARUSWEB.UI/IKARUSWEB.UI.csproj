@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IKARUSWEB.Application\IKARUSWEB.Application.csproj" />
+    <ProjectReference Include="..\IKARUSWEB.Infrastructure\IKARUSWEB.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

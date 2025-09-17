@@ -33,10 +33,15 @@ namespace IKARUSWEB.UI.Transformers
                     var principal = new ClaimsPrincipal(id);
 
                     // DİKKAT: IsPersistent = true + ExpiresUtc = token süresi
+                    //var props = new AuthenticationProperties
+                    //{
+                    //    IsPersistent = true,
+                    //    ExpiresUtc = expiresAt
+                    //};
                     var props = new AuthenticationProperties
                     {
-                        IsPersistent = true,
-                        ExpiresUtc = expiresAt
+                        IsPersistent = false
+                        // ExpiresUtc set ETME: Cookie, CookieOptions.ExpireTimeSpan (1 saat) + sliding ile yaşasın
                     };
                     await http.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
 

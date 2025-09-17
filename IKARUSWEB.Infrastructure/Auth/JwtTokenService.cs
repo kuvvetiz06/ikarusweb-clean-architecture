@@ -32,10 +32,15 @@ namespace IKARUSWEB.Infrastructure.Auth
             new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
             new(ClaimTypes.Name, user.UserName),
-            new("tenant_id", user.TenantId.ToString()),
+            new("tenant_id", user.TenantId?.ToString() ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
-            foreach (var r in user.Roles) claims.Add(new(ClaimTypes.Role, r));
+            if (user.Roles is { Count: > 0 })
+            {
+                foreach (var r in user.Roles!)
+                    if (!string.IsNullOrWhiteSpace(r))
+                        claims.Add(new(ClaimTypes.Role, r));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_opt.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
