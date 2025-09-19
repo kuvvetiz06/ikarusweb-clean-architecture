@@ -70,6 +70,7 @@ namespace IKARUSWEB.Infrastructure.Seed
             {
                 user = new AppUser
                 {
+                    FullName = "System Admin",
                     UserName = "admin",
                     Email = "admin@ikarus.local",
                     TenantId = tenant.Id,

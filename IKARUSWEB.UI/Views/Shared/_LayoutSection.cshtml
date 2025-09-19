@@ -1,10 +1,14 @@
-﻿@inject IStringLocalizer<SharedResource> _defLocalizer
+﻿@inject IStringLocalizer<SharedResource> _globalLocalizer
+@using System.Text.Json
 @{
     var requestCulture = Context.Features.Get<IRequestCultureFeature>();
     var currentCulture = requestCulture?.RequestCulture.UICulture.Name;
-    var localizedStrings = _defLocalizer.GetAllStrings();
-    var localizedStringsJson = System.Text.Json.JsonSerializer.Serialize(localizedStrings);
-
+    var localizedStrings = _globalLocalizer.GetAllStrings(includeParentCultures: true).ToDictionary(s => s.Name, s => s.Value);
+    localizedStrings.Add("CurrentCulture", currentCulture?.ToString() ?? "");
+    var localizedJson = JsonSerializer.Serialize(localizedStrings);
+    var token = Context.Session.GetString("access_token");
+    var tenantName = Context.Session.GetString("tenant_name");
+    var fullName = Context.Session.GetString("full_name");
 
     Layout = "~/Views/Shared/_Layout.cshtml";
     var HeaderWrapper = @ViewData["HeaderWrapper"];
@@ -12,12 +16,13 @@
 
 }
 <script>
-    // (opsiyonel) scope için set edebilirsin:
-    window.__tenantId = '@User.FindFirst("tenant")?.Value';
-    window.__userId = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
+    window.i18n = window.i18n || {};
+    window.i18n.common = @Html.Raw(localizedJson);
+    DevExpress.localization.locale(i18n.common.CurrentCulture);
 </script>
 <script src="~/js/common/menu-persist.js"></script>
 <script src="~/js/common/general.js"></script>
+
 @section Header {
     <!--begin::Header-->
     <div id="kt_header" style="" class="header align-items-stretch">
@@ -313,8 +318,8 @@
                                         <!--begin::Username-->
                                         <div class="d-flex flex-column">
                                             <div class="fw-bold d-flex align-items-center fs-5" id="userNameCardArea">
+                                                @fullName
                                             </div>
-                                            <a href="#" class="fw-semibold text-muted text-hover-primary fs-7" id="UserEmailCardArea"></a>
                                         </div>
                                         <!--end::Username-->
                                     </div>
@@ -325,12 +330,12 @@
                                 <!--end::Menu separator-->
                                 <!--begin::Menu item-->
                                 <div class="menu-item px-5">
-                                    <a href="@Url.Action("AccountSetting","User")" class="menu-link px-5">@L["AccountSettings"]</a>
+                                    <a href="@Url.Action("AccountSetting", "User")" class="menu-link px-5">@L["AccountSettings"]</a>
                                 </div>
                                 <!--end::Menu item-->
                                 <!--begin::Menu item-->
                                 <div class="menu-item px-5">
-                                    <a href="@Url.Action("MyTask","Task")" class="menu-link px-5">@L["Tasks"]</a>
+                                    <a href="@Url.Action("MyTask", "Task")" class="menu-link px-5">@L["Tasks"]</a>
                                 </div>
                                 <!--end::Menu item-->
                                 <!--begin::Menu item-->
@@ -1984,7 +1989,7 @@
         <!--end::Aside menu-->
         <!--begin::Footer-->
         <div class="aside-footer flex-column-auto py-5" id="kt_aside_footer">
-            <label class="btn btn-flex btn-custom btn-primary" id="tenantName"></label>
+            <label class="btn btn-flex btn-custom btn-primary" id="tenantName">@tenantName</label>
         </div>
         <!--end::Footer-->
     </div>

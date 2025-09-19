@@ -1,7 +1,7 @@
 ﻿using IKARUSWEB.Application.Common.Results;
 using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
+using IKARUSWEB.Application.Features.Tenants.Dtos;
 using IKARUSWEB.Application.Features.Tenants.Queries.GetTenantById;
-using IKARUSWEB.Application.Mapping;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

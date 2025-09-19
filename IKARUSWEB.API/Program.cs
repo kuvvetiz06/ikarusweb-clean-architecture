@@ -2,7 +2,7 @@ using FluentValidation;
 using IKARUSWEB.API.Transformers;
 using IKARUSWEB.Application.Behaviors;
 using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
-using IKARUSWEB.Application.Mapping;
+using IKARUSWEB.Application.Features.Tenants.Mapping;
 using IKARUSWEB.Infrastructure;
 using IKARUSWEB.Infrastructure.Seed;
 using MediatR;

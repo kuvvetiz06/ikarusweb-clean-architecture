@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IKARUSWEB.Application.Mapping
+namespace IKARUSWEB.Application.Features.Tenants.Dtos
 {
     public sealed record TenantDto(
        Guid Id,
@@ -13,7 +13,7 @@ namespace IKARUSWEB.Application.Mapping
        string Street,
        string City,
        string Country,
-       string DefaultCurrency,
+       string? DefaultCurrencyCode,
        string TimeZone,
        string DefaultCulture
    );

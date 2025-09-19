@@ -41,6 +41,11 @@ namespace IKARUSWEB.Infrastructure.Auth
                     if (!string.IsNullOrWhiteSpace(r))
                         claims.Add(new(ClaimTypes.Role, r));
             }
+            if (!string.IsNullOrWhiteSpace(user.TenantName))
+                claims.Add(new("tenant_name", user.TenantName));
+            if (!string.IsNullOrWhiteSpace(user.FullName))
+                claims.Add(new("full_name", user.FullName));
+
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_opt.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
