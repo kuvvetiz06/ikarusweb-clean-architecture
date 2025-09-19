@@ -1,8 +1,11 @@
 ﻿using IKARUSWEB.Application.Abstractions.Security;
 using IKARUSWEB.Application.Common.Security;
+using IKARUSWEB.Application.Features.Tenants.Queries.GetTenantById;
 using IKARUSWEB.Infrastructure.Auth;
 using IKARUSWEB.Infrastructure.Identity;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +17,7 @@ namespace IKARUSWEB.API.Controllers
     {
         private readonly UserManager<AppUser> _users;
         private readonly ITokenService _tokens;
-
+        private readonly IMediator _mediator;
 
         private void SetRefreshCookie(HttpContext http, string token, DateTimeOffset exp)
         {
@@ -24,7 +27,8 @@ namespace IKARUSWEB.API.Controllers
                 Secure = http.Request.IsHttps, 
                 SameSite = SameSiteMode.Lax,
                 Expires = exp,
-                Path = "/api/auth"
+                Path = "/api/auth",
+
             });
         }
         private static void ClearRefreshCookie(HttpContext http)
@@ -39,8 +43,8 @@ namespace IKARUSWEB.API.Controllers
                     Path = "/api/auth"
                 });
         }
-        public AuthController(UserManager<AppUser> users, ITokenService tokens)
-        { _users = users; _tokens = tokens; }
+        public AuthController(UserManager<AppUser> users, ITokenService tokens,IMediator mediator)
+        { _users = users; _tokens = tokens; _mediator = mediator; }
 
         [HttpPost("login")]
         [AllowAnonymous]
@@ -53,8 +57,14 @@ namespace IKARUSWEB.API.Controllers
                 return Unauthorized(new { title = "Unauthorized", detail = "Geçersiz kimlik bilgileri." });
 
             var roles = await _users.GetRolesAsync(user);
-            var ticket = new UserTicket(user.Id, user.TenantId, user.UserName ?? "", roles);
 
+            var tenant = await _mediator.Send(new GetTenantByIdQuery((Guid)user.TenantId), ct);
+            if (tenant?.Data is null) 
+                return Unauthorized(new { title = "Unauthorized", detail = "Geçersiz kimlik bilgileri." });
+
+
+            var ticket = new UserTicket(user.Id, user.TenantId, user.UserName ?? "", roles, tenant.Data.Name, user.FullName);
+         
             var (access, accessExp) = _tokens.Create(ticket);
             var (refresh, refreshExp) = await _tokens.IssueRefreshAsync(user.Id, (Guid)user.TenantId, ct);
 
@@ -75,9 +85,14 @@ namespace IKARUSWEB.API.Controllers
             if (!ok || current is null)
                 return Unauthorized(new { title = "Unauthorized", detail = "Invalid refresh token." });
 
-            // Access üret
-            var roles = await _users.GetRolesAsync(await _users.FindByIdAsync(current.UserId.ToString()));
-            var ticket = new UserTicket(current.UserId, current.TenantId, "", roles);
+            var user = await _users.FindByIdAsync(current.UserId.ToString());
+            var roles = await _users.GetRolesAsync(user);
+
+            var tenant = await _mediator.Send(new GetTenantByIdQuery((Guid)current.TenantId), ct);
+            if (tenant?.Data is null)
+                return Unauthorized(new { title = "Unauthorized", detail = "Geçersiz kimlik bilgileri." });
+
+            var ticket = new UserTicket(current.UserId, current.TenantId, "", roles, tenant.Data.Name, user.FullName);
             var (access, accessExp) = _tokens.Create(ticket);
 
             // Refresh rotate

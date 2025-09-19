@@ -3,7 +3,7 @@
 // Centralized SweetAlert + 401 refresh-retry.
 
 const axiosRef = window.axios;
-if (!axiosRef) console.error("axios missing. Load https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js");
+if (!axiosRef) console.error("Axios missing");
 
 const normalize = (resp) =>
     (resp?.data && typeof resp.data === "object")
@@ -17,58 +17,32 @@ export const http = axiosRef.create({
     withCredentials: true // Session + UI cookie her istekte taşınsın
 });
 
-// --- 401 → refresh → retry --- //
-let isRefreshing = false;
-let waitQueue = [];
-
-function queueWait() {
-    return new Promise(resolve => waitQueue.push(resolve));
-}
-function flushQueue() {
-    waitQueue.forEach(res => res());
-    waitQueue = [];
-}
-
 http.interceptors.response.use(
     (response) => normalize(response),
-    async (error) => {
-        const cfg = error?.config || {};
-        const url = (cfg.url || "");
+    (error) => {
         const status = error?.response?.status;
         const payload = error?.response?.data;
+        const message = payload?.message || payload?.title || error?.message || "Unexpected Error";
 
-        // Bu istek login/refresh değilse ve 401 geldiyse: otomatik refresh
-        const isAuthPath = url.startsWith("/auth/login") || url.startsWith("/auth/refresh");
-        if (status === 401 && !isAuthPath && !cfg.__retry) {
-            try {
-                if (isRefreshing) {
-                    await queueWait();                // başka refresh bitene kadar bekle
-                } else {
-                    isRefreshing = true;
-                    await axiosRef.post("/api/auth/refresh", {}, { withCredentials: true });
-                    isRefreshing = false;
-                    flushQueue();                     // bekleyenleri uyandır
-                }
-                cfg.__retry = true;                 // tek seferlik retry guard
-                return http.request(cfg);           // orijinal isteği tekrar dene
-            } catch (e) {
-                isRefreshing = false;
-                waitQueue = [];
-                try { await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }); } catch { }
-                window.location.href = "/account/login";
-                return Promise.resolve({ success: false, message: "Oturum süresi doldu.", data: null, status: 401 });
-            }
+        if (status === 401 || status === 403 || status === 419 || status === 440) {
+            return Promise.resolve({ success: false, message, data: null, status });
         }
 
-        // Diğer hata akışı (mevcut davranış korunur)
-        const message = payload?.message || payload?.title || error?.message || "Beklenmeyen bir hata oluştu.";
         if (status === 400 && payload?.errors) {
-            const lines = Object.entries(payload.errors).flatMap(([k, arr]) => (arr || []).map((m) => `${k}: ${m}`));
+            const lines = Object.entries(payload.errors)
+                .flatMap(([k, arr]) => (arr || []).map((m) => `${k}: ${m}`));
             Swal.fire({ icon: "error", html: `<pre style="text-align:left;white-space:pre-wrap">${lines.join("\n")}</pre>` });
         } else {
             Swal.fire({ icon: "error", text: message });
         }
-        return Promise.resolve({ success: false, message, data: null, errors: payload?.errors ?? null, status });
+
+        return Promise.resolve({
+            success: false,
+            message,
+            data: null,
+            errors: payload?.errors ?? null,
+            status
+        });
     }
 );
 

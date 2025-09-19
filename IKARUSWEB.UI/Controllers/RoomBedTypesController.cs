@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IKARUSWEB.UI.Controllers
 {
-    public class RoomBedTypeController : Controller
+    [Authorize]
+    public class RoomBedTypesController : Controller
     {
         public IActionResult Index()
         {
@@ -12,7 +14,6 @@ namespace IKARUSWEB.UI.Controllers
         {
             return View();
         }
-
         public IActionResult Edit()
         {
             return View();

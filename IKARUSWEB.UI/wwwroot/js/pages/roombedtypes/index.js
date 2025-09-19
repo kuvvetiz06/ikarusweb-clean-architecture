@@ -1,8 +1,8 @@
 // /wwwroot/js/screens/roombedtype/index.js (ESM)
-import { mountRoomBedTypeGrid, openCreate } from "./component.js";
+import { roomBedTypeGrid, openCreate } from "./component.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  mountRoomBedTypeGrid();
+  roomBedTypeGrid();
   const btn = document.getElementById("btn-roombedtype-new");
   if (btn) btn.addEventListener("click", () => openCreate());
 });

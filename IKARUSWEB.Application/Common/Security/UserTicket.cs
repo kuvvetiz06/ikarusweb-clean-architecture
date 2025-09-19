@@ -10,6 +10,8 @@ namespace IKARUSWEB.Application.Common.Security
     Guid UserId,
     Guid? TenantId,
     string UserName,
-    IList<string>? Roles
+    IList<string>? Roles,
+    string? TenantName = null,
+    string? FullName = null
 );
 }

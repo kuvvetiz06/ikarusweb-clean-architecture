@@ -117,38 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="modal.title.add" xml:space="preserve">
-    <value>New Entry</value>
-    <comment>Global</comment>
+  <data name="grid.column.code" xml:space="preserve">
+    <value>Kod</value>
   </data>
-  <data name="btn.add" xml:space="preserve">
-    <value>Create New</value>
-    <comment>dxDataGrid</comment>
+  <data name="grid.column.description" xml:space="preserve">
+    <value>Açıklama</value>
   </data>
-  <data name="btn.edit" xml:space="preserve">
-    <value>Edit</value>
-    <comment>dxDataGrid</comment>
+  <data name="grid.column.isactive" xml:space="preserve">
+    <value>Aktif</value>
   </data>
-  <data name="btn.excelexport" xml:space="preserve">
-    <value>Export to Excel</value>
-    <comment>Global</comment>
-  </data>
-  <data name="btn.remove" xml:space="preserve">
-    <value>Delete</value>
-    <comment>dxDataGrid</comment>
-  </data>
-  <data name="btn.cancel" xml:space="preserve">
-    <value>Cancel</value>
-    <comment>Global</comment>
-  </data>
-  <data name="btn.ok" xml:space="preserve">
-    <value>Ok</value>
-    <comment>Global</comment>
-  </data>
-  <data name="swal.grid.please.select.row" xml:space="preserve">
-    <value>Please select a line.</value>
-  </data>
-  <data name="modal.title.edit" xml:space="preserve">
-    <value>Edit</value>
+  <data name="grid.column.name" xml:space="preserve">
+    <value>Ad</value>
   </data>
 </root>

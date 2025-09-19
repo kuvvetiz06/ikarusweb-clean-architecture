@@ -16,13 +16,7 @@ function toLoadParams(loadOptions) {
     }
     return params;
 }
-function debugLog(loadOptions, params, url) {
-    if (!window.DEBUG_DX) return;
-    console.groupCollapsed("[DX] load →", url);
-    try { console.log("loadOptions:", JSON.parse(JSON.stringify(loadOptions))); } catch { }
-    console.log("query params:", params);
-    console.groupEnd();
-}
+
 
 export function buildDxDataStore(loadUrl, extraParamsBuilder) {
     return new DevExpress.data.CustomStore({
@@ -30,7 +24,6 @@ export function buildDxDataStore(loadUrl, extraParamsBuilder) {
         load: (loadOptions) => {
             const params = toLoadParams(loadOptions);
             if (typeof extraParamsBuilder === "function") Object.assign(params, extraParamsBuilder());
-            debugLog(loadOptions, params, loadUrl);
             return http.get(loadUrl, { params }).then(r => r);
         }
     });

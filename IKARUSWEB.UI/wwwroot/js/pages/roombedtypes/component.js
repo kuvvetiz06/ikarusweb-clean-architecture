@@ -7,32 +7,33 @@ import { roomBedTypeService } from "./service.js";
 let grid;
 const loadUrl = roomBedTypeService.dataUrl;
 
-export function mountRoomBedTypeGrid() {
+export function roomBedTypeGrid() {
     const ds = new DevExpress.data.DataSource({ store: buildDxDataStore(loadUrl) });
-    grid = createDefaultGrid("#grid-roombedtype", ds, {
+    grid = createDefaultGrid("#grid-roombedtypes", ds, {
         columns: [
-            { dataField: "name", caption: "Ad" },
-            { dataField: "code", caption: "Kod" },
-            { dataField: "description", caption: "Açıklama" }
+            { dataField: "name", caption: i18n.roombedtypes["grid.column.name"] },
+            { dataField: "code", caption: i18n.roombedtypes["grid.column.code"] },
+            { dataField: "description", caption: i18n.roombedtypes["grid.column.description"] },
+            { dataField: "isActive", caption: i18n.roombedtypes["grid.column.isactive"], dataType: "boolean" }
         ],
         selection: { mode: "single" },
         onToolbarPreparing: (e) => {
             e.toolbarOptions.items.unshift(
-                { location: "before", widget: "dxButton", options: { icon: "add", text: "Yeni", onClick: () => openCreate() } },
+                { location: "before", widget: "dxButton", options: { icon: "add", text: i18n.common["btn.add"], onClick: () => openCreate() } },
                 {
                     location: "before", widget: "dxButton", options: {
-                        icon: "edit", text: "Düzenle", onClick: () => {
+                        icon: "edit", text: i18n.common["btn.edit"], onClick: () => {
                             const keys = grid.getSelectedRowKeys();
-                            if (!keys.length) return Swal.fire({ icon: "info", text: "Lütfen bir satır seçin." });
+                            if (!keys.length) return Swal.fire({ icon: "info", text: i18n.common["swal.grid.please.select.row"] });
                             openEdit(keys[0]);
                         }
                     }
                 },
                 {
                     location: "before", widget: "dxButton", options: {
-                        icon: "trash", text: "Sil", onClick: async () => {
+                        icon: "trash", text: i18n.common["btn.remove"], onClick: async () => {
                             const keys = grid.getSelectedRowKeys();
-                            if (!keys.length) return Swal.fire({ icon: "info", text: "Lütfen bir satır seçin." });
+                            if (!keys.length) return Swal.fire({ icon: "info", text: i18n.common["swal.grid.please.select.row"] });
                             const r = await roomBedTypeService.confirmAndDelete(keys[0]);
                             if (r?.success) grid.refresh();
                         }
@@ -46,8 +47,8 @@ export function mountRoomBedTypeGrid() {
 
 export function openCreate() {
     openModal({
-        title: "Oda Yatak Tipi Oluştur",
-        url: "/RoomBedType/Add",
+        title: i18n.common["modal.title.add"],
+        url: "/roombedtypes/add",
         onReady: ({ body, submitButton, close }) => {
             const form = bindRoomBedTypeForm(body[0], {});
             submitButton().off("click").on("click", async () => {
@@ -62,8 +63,8 @@ async function openEdit(id) {
     const dto = await roomBedTypeService.getById(id);
     const model = dto?.data ?? dto ?? {};
     openModal({
-        title: "Oda Yatak Tipi Düzenle",
-        url: `/RoomBedType/Edit?id=${encodeURIComponent(id)}`,
+        title: i18n.common["modal.title.edit"],
+        url: `/roombedtypes/edit?id=${encodeURIComponent(id)}`,
         onReady: ({ body, submitButton, close }) => {
             const form = bindRoomBedTypeForm(body[0], model);
             submitButton().off("click").on("click", async () => {

@@ -1,0 +1,20 @@
+﻿@using Microsoft.Extensions.Localization
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_LayoutSection.cshtml";
+    var localizedRoomBedTypes = L.GetAllStrings(includeParentCultures: true).ToDictionary(s => s.Name, s => s.Value);
+    var roomBedTypesJson = JsonSerializer.Serialize(localizedRoomBedTypes);
+}
+<script>
+    window.i18n.roombedtypes = @Html.Raw(roomBedTypesJson);
+</script>
+
+
+<div id="grid-roombedtypes"></div>
+
+<script type="module" src="~/js/pages/roombedtypes/service.js"></script>
+<script type="module" src="~/js/pages/roombedtypes/formBindings.js"></script>
+<script type="module" src="~/js/pages/roombedtypes/component.js"></script>
+<script type="module" src="~/js/pages/roombedtypes/index.js"></script>
+

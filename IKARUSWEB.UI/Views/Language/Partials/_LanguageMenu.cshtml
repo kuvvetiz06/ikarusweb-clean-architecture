@@ -38,7 +38,7 @@
         @foreach (var item in cultureItems)
         {
             <div class="menu-item px-3">
-                <a href="@Url.Action("Set", "Language", new { culture = item.Value })"
+                <a href="@Url.Action("Set", "Language", new { culture = item.Value, returnUrl = Context.Request.Path + Context.Request.QueryString })"
                    class="menu-link d-flex px-5">
                     <span class="symbol symbol-20px me-4">
                         <img class="rounded-1" src="@item.FlagUrl" alt="@item.DisplayName" />

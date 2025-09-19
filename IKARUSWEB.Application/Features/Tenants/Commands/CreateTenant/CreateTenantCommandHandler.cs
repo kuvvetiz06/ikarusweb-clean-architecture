@@ -2,7 +2,7 @@
 using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Abstractions.Repositories;
 using IKARUSWEB.Application.Common.Results;
-using IKARUSWEB.Application.Mapping;
+using IKARUSWEB.Application.Features.Tenants.Dtos;
 using IKARUSWEB.Domain.Entities;
 using MediatR;
 using System;
