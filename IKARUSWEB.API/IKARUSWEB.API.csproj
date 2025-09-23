@@ -1,14 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.0.1" />
-    <PackageReference Include="DevExtreme.AspNet.Core" Version="23.1.7" />
+    <PackageReference Include="DevExtreme.AspNet.Core" Version="23.1.15" />
     <PackageReference Include="DevExtreme.AspNet.Data" Version="2.9.2" />
     <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
@@ -21,10 +19,8 @@
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="2.6.9" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\IKARUSWEB.Application\IKARUSWEB.Application.csproj" />
     <ProjectReference Include="..\IKARUSWEB.Infrastructure\IKARUSWEB.Infrastructure.csproj" />
   </ItemGroup>
-
 </Project>

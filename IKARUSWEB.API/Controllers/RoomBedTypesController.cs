@@ -5,6 +5,7 @@ using DevExtreme.AspNet.Mvc;
 using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.CreateRoomBedType;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.DeleteRoomBedType;
+using IKARUSWEB.Application.Features.RoomBedTypes.Commands.UpdateRoomBedType;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.UpdateRoomBedTypeName;
 using IKARUSWEB.Application.Features.RoomBedTypes.Dtos;
 using IKARUSWEB.Application.Features.RoomBedTypes.Queries.GetRoomBedTypeById;
@@ -57,6 +58,35 @@ namespace IKARUSWEB.API.Controllers
             return res.Succeeded ? Ok(res.Data) : BadRequest(new { title = "Validation Error", detail = res.Message });
         }
 
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(typeof(RoomBedTypeDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRoomBedTypeCommand body, CancellationToken ct)
+        {
+
+            -----Yapı Düzgün değiş CommandHandlerda tenantid ekleniyor o burda bakıyor kontrol et !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if (id != body.Id)
+                return BadRequest(new { title = "Bad Request", detail = "Route id mismatch" });
+
+            // tenantId claim'den
+            var tenantIdStr = User.FindFirst("tenant_id")?.Value;
+            if (!Guid.TryParse(tenantIdStr, out var tenantId))
+                return Forbid();
+
+            var cmd = new UpdateRoomBedTypeCommand(
+                body.Id, tenantId, body.Name, body.Code, body.Description);
+
+            var res = await _mediator.Send(cmd, ct);
+            if (res.Succeeded) return Ok(res.Data);
+
+            var msg = res.Message ?? "Error";
+            if (string.Equals(msg, "Not found", StringComparison.OrdinalIgnoreCase))
+                return NotFound(new { title = "Not Found" });
+
+            return BadRequest(new { title = "Validation Error", detail = msg });
+
+        }
         // Update Name (only)
         [HttpPut("{id:guid}/name")]
         [ProducesResponseType(typeof(RoomBedTypeDto), StatusCodes.Status200OK)]
@@ -101,7 +131,7 @@ namespace IKARUSWEB.API.Controllers
                     Code = x.Code,
                     Description = x.Description,
                     IsActive = x.IsActive,
-                    
+
                 });
 
             var result = await DataSourceLoader.LoadAsync(query, load, ct);

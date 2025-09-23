@@ -10,7 +10,7 @@ namespace IKARUSWEB.Application.Abstractions.Repositories.RoomBedTypeRepositorie
     public interface IRoomBedTypeReadRepository
     {
         Task<RoomBedType?> GetByIdAsync(Guid id, CancellationToken ct = default);
-        Task<bool> ExistsByNameAsync(string name, CancellationToken ct = default);
+        Task<bool> ExistsByNameAsync(Guid tenantId, string name, Guid? excludeId = null, CancellationToken ct = default);
         Task<bool> ExistsByCodeAsync(string code, CancellationToken ct = default); // code optional, null değilse kontrol
         Task<List<RoomBedType>> ListAsync(string? q, CancellationToken ct = default);
     }

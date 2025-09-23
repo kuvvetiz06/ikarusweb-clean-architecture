@@ -44,3 +44,32 @@ export function createDefaultGrid(selector, dataSource, overrides = {}) {
         ...overrides
     }).dxDataGrid("instance");
 }
+
+export function attachDxTooltip(targetEl, text, extraOpts) {
+    if (!targetEl || !text) return;
+    const $target = $(targetEl);
+
+    if ($target.attr("title")) {
+        $target.attr("data-tooltip", $target.attr("title"));
+        $target.removeAttr("title");
+    }
+
+    const opts = Object.assign({
+        target: $target,
+        contentTemplate: () => $("<div/>").text(text),
+        showEvent: "mouseenter",
+        hideEvent: "mouseleave",
+        position: "bottom",
+        animation: { show: { type: "fade", duration: 120 }, hide: { type: "fade", duration: 80 } }
+    }, extraOpts || {});
+
+    try {
+        const old = $target.data("dxTooltip");
+        if (old && old.dispose) old.dispose();
+    } catch { /* ignore */ }
+
+    const $tooltip = $("<div/>").appendTo(document.body).dxTooltip(opts);
+    const instance = $tooltip.dxTooltip("instance");
+    $target.data("dxTooltip", instance);
+    return instance;
+}

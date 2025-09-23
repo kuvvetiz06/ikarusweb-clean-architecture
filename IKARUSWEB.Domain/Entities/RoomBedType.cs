@@ -22,6 +22,19 @@ namespace IKARUSWEB.Domain.Entities
         { TenantId = tenantId; Name = name; Code = code?.Trim()?.ToUpperInvariant(); Description = description; }
 
         public RoomBedType Rename(string name) { Name = name; Touch(); return this; }
+
+        public RoomBedType UpdateDetails(string name, string? code, string? description)
+        {
+            Name = name;
+            Code = NormalizeCode(code);
+            Description = description;
+            Touch();
+            return this;
+        }
+
+        private static string? NormalizeCode(string? code)
+        => string.IsNullOrWhiteSpace(code) ? null : code.Trim().ToUpperInvariant();
     }
+
 }
 

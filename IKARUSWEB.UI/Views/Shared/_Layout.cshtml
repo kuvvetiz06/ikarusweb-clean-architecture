@@ -2,7 +2,7 @@
 <html lang="en">
 <!--begin::Head-->
 <head>
-    <title>IKARUSWEB</title>
+    <title>@ViewData["Title"]</title>
     <meta charset="utf-8" />
     <meta name="description" content="IKARUSWEB Professionel Hotel Managament Systems" />
     <meta name="keywords" content="hotel managament, cloud hotel managament, online hotel managament" />
@@ -24,10 +24,10 @@
     <link href="/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="~/css/devextreme/dx.common.css" />
     <link id="dx-theme" rel="stylesheet" href="~/css/devextreme/dx.material.blue.light.compact.css" />
-    <link href="~/css/common/global.css" rel="stylesheet" />
+    <link href="~/css/common/global.css" rel="stylesheet" asp-append-version="true" />
      <!--end::Global Stylesheets Bundle-->
     <!--begin::Javascript-->
-  
+
     <!--begin::Global Javascript Bundle(mandatory for all pages)-->
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
@@ -41,10 +41,9 @@
     <script src="~/lib/jquery-serialize/jquery.serializejson.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
-    <!--end::Global Javascript Bundle-->
-    <!--begin::Vendors Javascript(used for this page only)-->
-    <script src="~/assets/plugins/custom/fullcalendar/fullcalendar.bundle.js"></script>
-    <!--end::Vendors Javascript-->
+    <script src="~/lib/exceljs/exceljs.min.js"></script>
+    <script src="~/lib/file-saver/filesaver.min.js"></script>
+    <!--end::Global Javascript Bundle-->    
     <!--begin::Custom Javascript(used for this page only)-->
     <script src="/assets/js/widgets.bundle.js"></script>
     <!--end::Custom Javascript-->

@@ -1,5 +1,5 @@
 // /wwwroot/js/core/modal.js (ESM)
-export function openModal({ title, url, onReady, submitText = "Kaydet" }) {
+export function openModal({ title, url, onReady }) {
     const id = "m-" + Math.random().toString(36).slice(2);
     const html = `
   <div class="modal fade" id="${id}" tabindex="-1">
@@ -11,8 +11,8 @@ export function openModal({ title, url, onReady, submitText = "Kaydet" }) {
         </div>
         <div class="modal-body position-relative"><div id="${id}-body" class="p-1"></div></div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-          <button class="btn btn-primary" data-modal-submit>${submitText}</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">${i18n.common["btn.cancel"]}</button>
+          <button class="btn btn-primary" data-modal-submit>${i18n.common["btn.ok"]}</button>
         </div>
       </div>
     </div>
@@ -22,7 +22,6 @@ export function openModal({ title, url, onReady, submitText = "Kaydet" }) {
     const modal = new bootstrap.Modal(document.getElementById(id));
     const $body = $m.find("#" + id + "-body");
 
-    // Metronic benzeri loader (fallback spinner)
     const $loader = $(`
     <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style="z-index:5;">
       <div class="spinner-border text-primary" style="width:2rem; height:2rem;"" role="status"><span class="visually-hidden">Yükleniyor...</span></div>
