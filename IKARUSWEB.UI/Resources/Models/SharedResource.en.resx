@@ -151,4 +151,13 @@
   <data name="modal.title.edit" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="swal.session.expired" xml:space="preserve">
+    <value>Your session has expired. Please log in again.</value>
+  </data>
+  <data name="grid.column.bool.true" xml:space="preserve">
+    <value>True</value>
+  </data>
+  <data name="grid.column.bool.false" xml:space="preserve">
+    <value>False</value>
+  </data>
 </root>

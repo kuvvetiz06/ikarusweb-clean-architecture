@@ -6,8 +6,9 @@
     var localizedRoomBedTypes = L.GetAllStrings(includeParentCultures: true).ToDictionary(s => s.Name, s => s.Value);
     var roomBedTypesJson = JsonSerializer.Serialize(localizedRoomBedTypes);
 }
+
 <script>
-    window.i18n.roombedtypes = @Html.Raw(roomBedTypesJson);
+    window.i18n.roombedtypes = @Html.Raw(roomBedTypesJson);    
 </script>
 
 
