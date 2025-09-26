@@ -36,7 +36,7 @@ namespace IKARUSWEB.Application.Features.RoomBedTypes.Commands.UpdateRoomBedType
                 return Result<RoomBedTypeDto>.Failure("Not found");
 
             // 2) İsim benzersizliği (tenant scope'unda)
-            var exists = await _read.ExistsByNameAsync(request.TenantId, request.Name, excludeId: request.Id, ct);
+            var exists = await _read.ExistsByNameAsync(request.Name, excludeId: request.Id, ct);
             if (exists)
                 return Result<RoomBedTypeDto>.Failure("Name already exists.");
 

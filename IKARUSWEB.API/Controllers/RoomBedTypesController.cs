@@ -65,7 +65,6 @@ namespace IKARUSWEB.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRoomBedTypeCommand body, CancellationToken ct)
         {
 
-            -----Yapı Düzgün değiş CommandHandlerda tenantid ekleniyor o burda bakıyor kontrol et !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if (id != body.Id)
                 return BadRequest(new { title = "Bad Request", detail = "Route id mismatch" });
 

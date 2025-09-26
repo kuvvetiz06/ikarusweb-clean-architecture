@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Abstractions.Repositories.RoomBedTypeRepositories;
 
 
@@ -18,7 +19,7 @@ namespace IKARUSWEB.Application.Features.RoomBedTypes.Commands.CreateRoomBedType
             RuleFor(x => x.Description).MaximumLength(500);
 
             RuleFor(x => x.Name)
-                .MustAsync(async (name, ct) => !await read.ExistsByNameAsync(name, ct))
+                .MustAsync(async (name, ct) => !await read.ExistsByNameAsync(name, excludeId: null, ct))
                 .WithMessage("Name already exists.");
 
             RuleFor(x => x.Code)
