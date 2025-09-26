@@ -22,9 +22,10 @@ namespace IKARUSWEB.Infrastructure.Persistence.Repositories.RoomBedTypeRepositor
             => await _db.Set<RoomBedType>().AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id && x.TenantId == _tenant.TenantId, ct);
 
-        public async Task<bool> ExistsByNameAsync(string name, CancellationToken ct = default)
+        public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId, CancellationToken ct = default)
             => await _db.Set<RoomBedType>().AsNoTracking()
                 .AnyAsync(x => x.TenantId == _tenant.TenantId &&
+                               x.Id != excludeId &&
                                x.Name.ToLower() == name.ToLower(), ct);
 
         public async Task<bool> ExistsByCodeAsync(string code, CancellationToken ct = default)
