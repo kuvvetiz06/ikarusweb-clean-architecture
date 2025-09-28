@@ -40,8 +40,9 @@ namespace IKARUSWEB.Infrastructure.Persistence
 
         private sealed class DesignTimeTenantProvider : ITenantProvider
         {
-            public Guid? TenantId => null;   // design-time'da tenant yok
+            public Guid TenantId => Guid.Empty;   // design-time'da tenant yok
             public bool IsSuperUser => true; // filtreleri etkisiz bırakmaya uygun
+            public bool IsResolved => false;
         }
     }
 

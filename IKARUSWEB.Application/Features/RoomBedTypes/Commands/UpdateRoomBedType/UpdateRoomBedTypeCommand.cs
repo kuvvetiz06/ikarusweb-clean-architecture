@@ -14,6 +14,7 @@ namespace IKARUSWEB.Application.Features.RoomBedTypes.Commands.UpdateRoomBedType
     Guid TenantId,
     string Name,
     string? Code,
-    string? Description
+    string? Description,
+    bool IsActive
 ) : IRequest<Result<RoomBedTypeDto>>;
 }

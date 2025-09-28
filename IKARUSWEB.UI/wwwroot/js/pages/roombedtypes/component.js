@@ -1,5 +1,5 @@
 // /wwwroot/js/screens/roombedtype/component.js
-import { buildDxDataStore, createDefaultGrid, attachDxTooltip } from "../../core/dxHelpers.js";
+import { buildDxDataStore, createDxGrid, createDxTooltip } from "../../core/dxHelpers.js";
 import { openModal } from "../../core/modal.js";
 import { bindRoomBedTypeForm } from "./formBindings.js";
 import { roomBedTypeService } from "./service.js";
@@ -8,49 +8,16 @@ let grid;
 const loadUrl = roomBedTypeService.dataUrl;
 
 export function roomBedTypeGrid() {
-    const yes = i18n.common["grid.column.bool.true"] ?? "Yes";
-    const no = i18n.common["grid.column.bool.false"] ?? "No";
     const ds = new DevExpress.data.DataSource({ store: buildDxDataStore(loadUrl) });
-    grid = createDefaultGrid("#grid-roombedtypes", ds, {
+    grid = createDxGrid("#grid-roombedtypes", ds, {
         columns: [
             { dataField: "name", caption: i18n.roombedtypes["grid.column.name"] },
             { dataField: "code", caption: i18n.roombedtypes["grid.column.code"] },
             { dataField: "description", caption: i18n.roombedtypes["grid.column.description"] },
-            {
-                dataField: "isActive", caption: i18n.roombedtypes["grid.column.isactive"], dataType: "boolean",
-                customizeText: (cellInfo) => cellInfo.value ? yes : no
+            { dataField: "isActive", caption: i18n.roombedtypes["grid.column.isactive"], dataType: "boolean",
+                customizeText: (cellInfo) => cellInfo.value ? i18n.common["grid.column.bool.true"] : i18n.common["grid.column.bool.false"]
             }
-        ],
-        selection: { mode: "single" },
-        export: {
-            enabled: true,
-            allowExportSelectedData: false,
-        },
-        onExporting: (e) => {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet("roombedtypes");
-
-            DevExpress.excelExporter.exportDataGrid({
-                component: e.component,
-                worksheet,
-                autoFilterEnabled: true, customizeCell(options) {
-                    const { gridCell, excelCell } = options;
-                    if (gridCell?.cellType === "data" && gridCell?.column?.dataField === "isActive") {
-                        excelCell.value = gridCell.value ? yes : no;
-                    }
-                }
-            }).then(() => {
-                const pad = (n) => n.toString().padStart(2, "0");
-                const d = new Date();
-                const fileName = `roombedtypes_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.xlsx`;
-
-                return workbook.xlsx.writeBuffer().then((buffer) => {
-                    saveAs(new Blob([buffer], { type: "application/octet-stream" }), fileName);
-                });
-            });
-            e.cancel = true;
-        },
-
+        ],        
         onToolbarPreparing: (e) => {
 
 
@@ -64,7 +31,7 @@ export function roomBedTypeGrid() {
                         text: "",
                         onClick: () => openCreate(),
                         onInitialized: (args) => {
-                            attachDxTooltip(
+                            createDxTooltip(
                                 args.element,
                                 (i18n.common?.["btn.add"])
                             );
@@ -84,7 +51,7 @@ export function roomBedTypeGrid() {
                             openEdit(keys[0]);
                         },
                         onInitialized: (args) => {
-                            attachDxTooltip(
+                            createDxTooltip(
                                 args.element,
                                 (i18n.common?.["btn.edit"])
                             );
@@ -104,7 +71,7 @@ export function roomBedTypeGrid() {
                             if (r?.success) grid.refresh();
                         },
                         onInitialized: (args) => {
-                            attachDxTooltip(
+                            createDxTooltip(
                                 args.element,
                                 (i18n.common?.["btn.remove"])
                             );
@@ -125,7 +92,7 @@ export function openCreate() {
             const form = bindRoomBedTypeForm(body[0], {});
             submitButton().off("click").on("click", async () => {
                 const res = await roomBedTypeService.save(form.getValues());
-                if (res?.success) { close(); grid.refresh(); }
+                if (res?.succeeded) { close(); grid.refresh(); }
             });
         }
     });
@@ -141,7 +108,7 @@ async function openEdit(id) {
             const form = bindRoomBedTypeForm(body[0], model);
             submitButton().off("click").on("click", async () => {
                 const res = await roomBedTypeService.save({ id, ...form.getValues() });
-                if (res?.success) { close(); grid.refresh(); }
+                if (res?.succeeded) { close(); grid.refresh(); }
             });
         }
     });

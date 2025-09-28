@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IKARUSWEB.Application.Abstractions.Localization;
 using IKARUSWEB.Application.Abstractions.Repositories.RoomBedTypeRepositories;
 using IKARUSWEB.Application.Common.Results;
 using IKARUSWEB.Application.Features.RoomBedTypes.Dtos;
@@ -33,20 +34,19 @@ namespace IKARUSWEB.Application.Features.RoomBedTypes.Commands.UpdateRoomBedType
             // 1) Kayıt mevcut mu? + tenant kontrolü
             var entity = await _read.GetByIdAsync(request.Id, ct);
             if (entity is null || entity.TenantId != request.TenantId)
-                return Result<RoomBedTypeDto>.Failure("Not found");
+                return Result<RoomBedTypeDto>.Failure(MessageCodes.Common.NotFound);
 
             // 2) İsim benzersizliği (tenant scope'unda)
             var exists = await _read.ExistsByNameAsync(request.Name, excludeId: request.Id, ct);
             if (exists)
-                return Result<RoomBedTypeDto>.Failure("Name already exists.");
+                return Result<RoomBedTypeDto>.Failure(MessageCodes.RoomBedType.NameExists);
 
-            // 3) Full update (Name + Code + Description)
-            entity.UpdateDetails(request.Name, request.Code, request.Description);
+            // 3) Full update (Name + Code + Description + IsActive)
+            entity.UpdateDetails(request.Name, request.Code, request.Description, request.IsActive);
 
             await _write.UpdateAsync(entity, ct);
-
             var dto = _mapper.Map<RoomBedTypeDto>(entity);
-            return Result<RoomBedTypeDto>.Success(dto);
+            return Result<RoomBedTypeDto>.Success(dto, MessageCodes.Common.RecordUpdated);
         }
     }
 }
