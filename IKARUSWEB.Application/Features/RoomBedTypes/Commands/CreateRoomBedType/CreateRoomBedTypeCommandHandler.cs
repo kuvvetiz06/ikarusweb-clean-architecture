@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IKARUSWEB.Application.Abstractions;
+using IKARUSWEB.Application.Abstractions.Localization;
 using IKARUSWEB.Application.Abstractions.Repositories;
 using IKARUSWEB.Application.Abstractions.Repositories.RoomBedTypeRepositories;
 using IKARUSWEB.Application.Common.Results;
@@ -31,7 +32,7 @@ namespace IKARUSWEB.Application.Features.RoomBedTypes.Commands.CreateRoomBedType
             await _write.CreateAsync(entity, ct);
 
             var dto = _mapper.Map<RoomBedTypeDto>(entity);
-            return Result<RoomBedTypeDto>.Success(dto);
+            return Result<RoomBedTypeDto>.Success(dto, MessageCodes.Common.RecordCreated);
         }
     }
 }

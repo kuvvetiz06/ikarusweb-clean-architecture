@@ -8,18 +8,18 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
+using System.Runtime.ConstrainedExecution;
 
 
 namespace IKARUSWEB.Infrastructure.Persistence
 {
     public sealed class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>, IAppDbContext
     {
-     
-        private readonly Guid? _currentTenantId;
+
+        private readonly ITenantProvider _tenant;
         public AppDbContext(DbContextOptions<AppDbContext> options, ITenantProvider tenant) : base(options)
         {
-           _currentTenantId = tenant.TenantId; 
-      
+            _tenant = tenant; // TenantId ve IsResolved burada
         }
 
         // EF DbSet'leri
@@ -34,7 +34,7 @@ namespace IKARUSWEB.Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-      
+
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<AppUser>(b =>
             {
@@ -56,26 +56,25 @@ namespace IKARUSWEB.Infrastructure.Persistence
                 var clr = et.ClrType;
                 if (!typeof(BaseEntity).IsAssignableFrom(clr)) continue;
 
-                // e => !((BaseEntity)e).IsDeleted
+                // param: e
                 var param = Expression.Parameter(clr, "e");
-                var baseProp = Expression.Property(Expression.Convert(param, typeof(BaseEntity)), nameof(BaseEntity.IsDeleted));
-                var notDeleted = Expression.Equal(baseProp, Expression.Constant(false));
 
-                Expression body = notDeleted;
+                // soft delete: !((BaseEntity)e).IsDeleted
+                var baseProp = Expression.Property(
+                Expression.Convert(param, typeof(BaseEntity)),nameof(BaseEntity.IsDeleted));
+                Expression body = Expression.Equal(baseProp, Expression.Constant(false));
 
-                // Tenant filtresi: e => ((IMustHaveTenant)e).TenantId == _currentTenantId
-                if (typeof(IMustHaveTenant).IsAssignableFrom(clr))
+                // tenant filtresi: yalnızca _tenant.IsResolved == true ise uygula
+                if (typeof(IMustHaveTenant).IsAssignableFrom(clr) && _tenant.IsResolved)
                 {
-                    var tenantProp = Expression.Property(Expression.Convert(param, typeof(IMustHaveTenant)), nameof(IMustHaveTenant.TenantId));
+                    var tenantProp = Expression.Property(
+                    Expression.Convert(param, typeof(IMustHaveTenant)),
+                    nameof(IMustHaveTenant.TenantId));
 
-                    // _currentTenantId yoksa (anon kullanıcı veya sysadmin) filtreyi geç (true)
-                    // otherwise: tenant eşitliği
-                    var tenantIdConst = Expression.Constant(_currentTenantId, typeof(Guid?));
-                    var hasTenant = Expression.NotEqual(tenantIdConst, Expression.Constant(null, typeof(Guid?)));
-                    var equals = Expression.Equal(tenantProp, Expression.Convert(tenantIdConst, typeof(Guid)));
+                    var equalsTenant = Expression.Equal(tenantProp,
+                    Expression.Constant(_tenant.TenantId)); // Guid, nullable değil
 
-                    var tenantClause = Expression.Condition(hasTenant, equals, Expression.Constant(true));
-                    body = Expression.AndAlso(body, tenantClause);
+                    body = Expression.AndAlso(body, equalsTenant);
                 }
 
                 var lambda = Expression.Lambda(body, param);

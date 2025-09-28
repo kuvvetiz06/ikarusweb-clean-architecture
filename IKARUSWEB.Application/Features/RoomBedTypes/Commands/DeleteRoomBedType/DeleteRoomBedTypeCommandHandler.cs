@@ -1,4 +1,5 @@
-﻿using IKARUSWEB.Application.Abstractions.Repositories.RoomBedTypeRepositories;
+﻿using IKARUSWEB.Application.Abstractions.Localization;
+using IKARUSWEB.Application.Abstractions.Repositories.RoomBedTypeRepositories;
 using IKARUSWEB.Application.Common.Results;
 using MediatR;
 using System;
@@ -21,7 +22,7 @@ namespace IKARUSWEB.Application.Features.RoomBedTypes.Commands.DeleteRoomBedType
         public async Task<Result<Unit>> Handle(DeleteRoomBedTypeCommand request, CancellationToken ct)
         {
             var entity = await _read.GetByIdAsync(request.Id, ct);
-            if (entity is null) return Result<Unit>.Failure("Not found");
+            if (entity is null) return Result<Unit>.Failure(MessageCodes.Common.RecordDeleted);
 
             await _write.DeleteAsync(entity, ct);
             return Result<Unit>.Success(Unit.Value);

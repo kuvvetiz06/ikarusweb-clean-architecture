@@ -2,20 +2,22 @@
 using AutoMapper.QueryableExtensions;
 using DevExtreme.AspNet.Data;
 using DevExtreme.AspNet.Mvc;
+using IKARUSWEB.API.Localization;
 using IKARUSWEB.Application.Abstractions;
+using IKARUSWEB.Application.Abstractions.Localization;
+using IKARUSWEB.Application.Common.Results;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.CreateRoomBedType;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.DeleteRoomBedType;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.UpdateRoomBedType;
-using IKARUSWEB.Application.Features.RoomBedTypes.Commands.UpdateRoomBedTypeName;
 using IKARUSWEB.Application.Features.RoomBedTypes.Dtos;
 using IKARUSWEB.Application.Features.RoomBedTypes.Queries.GetRoomBedTypeById;
 using IKARUSWEB.Application.Features.RoomBedTypes.Queries.ListRoomBedTypes;
-using IKARUSWEB.Domain.Entities;
 using IKARUSWEB.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace IKARUSWEB.API.Controllers
 {
@@ -28,9 +30,10 @@ namespace IKARUSWEB.API.Controllers
         private readonly AppDbContext _db;
         private readonly ITenantProvider _tenant;
         private readonly IMapper _mapper;
+        private readonly IStringLocalizer<CommonResource> _L;
 
-        public RoomBedTypesController(ISender mediator, AppDbContext db, ITenantProvider tenant, IMapper mapper)
-        { _mediator = mediator; _db = db; _tenant = tenant; _mapper = mapper; }
+        public RoomBedTypesController(ISender mediator, AppDbContext db, ITenantProvider tenant, IMapper mapper, IStringLocalizer<CommonResource> localizer)
+        { _mediator = mediator; _db = db; _tenant = tenant; _mapper = mapper; _L = localizer; }
 
         // List (basit)
         [HttpGet]
@@ -45,7 +48,7 @@ namespace IKARUSWEB.API.Controllers
         public async Task<IActionResult> Get(Guid id, CancellationToken ct)
         {
             var dto = await _mediator.Send(new GetRoomBedTypeByIdQuery(id), ct);
-            return dto is null ? NotFound(new { title = "Not Found" }) : Ok(dto);
+            return dto is null ? NotFound(Result<RoomBedTypeDto>.Failure(_L[MessageCodes.Common.RecordNotFound].Value)) : Ok(dto);
         }
 
         // Create (Name, Code, Description)
@@ -55,56 +58,39 @@ namespace IKARUSWEB.API.Controllers
         public async Task<IActionResult> Create([FromBody] CreateRoomBedTypeCommand cmd, CancellationToken ct)
         {
             var res = await _mediator.Send(cmd, ct);
-            return res.Succeeded ? Ok(res.Data) : BadRequest(new { title = "Validation Error", detail = res.Message });
+            return res.Succeeded ? Ok(Result<RoomBedTypeDto>
+                    .Success(res.Data ?? new RoomBedTypeDto(), _L[MessageCodes.Common.RecordCreated].Value)) : BadRequest(Result<RoomBedTypeDto>.Failure(_L[MessageCodes.Common.Validation].Value));
         }
 
         [HttpPut("{id:guid}")]
-        [ProducesResponseType(typeof(RoomBedTypeDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<RoomBedTypeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRoomBedTypeCommand body, CancellationToken ct)
         {
 
             if (id != body.Id)
-                return BadRequest(new { title = "Bad Request", detail = "Route id mismatch" });
+                return BadRequest(Result<RoomBedTypeDto>.Failure(_L[MessageCodes.Common.RecordNotFound].Value));
 
-            // tenantId claim'den
-            var tenantIdStr = User.FindFirst("tenant_id")?.Value;
-            if (!Guid.TryParse(tenantIdStr, out var tenantId))
-                return Forbid();
 
             var cmd = new UpdateRoomBedTypeCommand(
-                body.Id, tenantId, body.Name, body.Code, body.Description);
+                body.Id, _tenant.TenantId, body.Name, body.Code, body.Description, body.IsActive);
 
             var res = await _mediator.Send(cmd, ct);
-            if (res.Succeeded) return Ok(res.Data);
+
+            if (res.Succeeded)
+
+                return Ok(Result<RoomBedTypeDto>
+                    .Success(res.Data ?? new RoomBedTypeDto(), _L[MessageCodes.Common.RecordUpdated].Value));
 
             var msg = res.Message ?? "Error";
-            if (string.Equals(msg, "Not found", StringComparison.OrdinalIgnoreCase))
-                return NotFound(new { title = "Not Found" });
+            if (string.Equals(msg, MessageCodes.Common.RecordNotFound, StringComparison.OrdinalIgnoreCase))
+                return NotFound(Result<RoomBedTypeDto>.Failure(_L[MessageCodes.Common.RecordNotFound].Value));
 
-            return BadRequest(new { title = "Validation Error", detail = msg });
+            return BadRequest(Result<RoomBedTypeDto>.Failure(_L[MessageCodes.Common.BadRequest].Value));
 
         }
-        // Update Name (only)
-        [HttpPut("{id:guid}/name")]
-        [ProducesResponseType(typeof(RoomBedTypeDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Rename(Guid id, [FromBody] UpdateRoomBedTypeNameCommand body, CancellationToken ct)
-        {
-            if (id != body.Id) return BadRequest(new { title = "Bad Request", detail = "Route id mismatch" });
-
-            var res = await _mediator.Send(body, ct);
-            if (res.Succeeded) return Ok(res.Data);
-
-            var msg = res.Message ?? "Error";
-            if (string.Equals(msg, "Not found", StringComparison.OrdinalIgnoreCase))
-                return NotFound(new { title = "Not Found" });
-
-            return BadRequest(new { title = "Validation Error", detail = msg });
-        }
-
+      
         // Delete
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -113,7 +99,7 @@ namespace IKARUSWEB.API.Controllers
         {
             var res = await _mediator.Send(new DeleteRoomBedTypeCommand(id), ct);
             return res.Succeeded ? NoContent() :
-                   StatusCode(404, new { title = "Not Found", detail = res.Message });
+                   StatusCode(404, Result<RoomBedTypeDto>.Failure(_L[MessageCodes.Common.RecordNotFound].Value));
         }
 
         // DevExtreme server-side data

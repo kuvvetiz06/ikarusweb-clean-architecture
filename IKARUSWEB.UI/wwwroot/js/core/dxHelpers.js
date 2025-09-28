@@ -28,8 +28,9 @@ export function buildDxDataStore(loadUrl, extraParamsBuilder) {
         }
     });
 }
+    
 
-export function createDefaultGrid(selector, dataSource, overrides = {}) {
+export function createDxGrid(selector, dataSource, overrides = {}) {
     return $(selector).dxDataGrid({
         dataSource,
         remoteOperations: { paging: true, sorting: true, filtering: true, grouping: true, summary: true },
@@ -41,11 +42,41 @@ export function createDefaultGrid(selector, dataSource, overrides = {}) {
         filterRow: { visible: true, applyFilter: "auto" },
         searchPanel: { visible: true },
         selection: { mode: "single" },
+        export: {
+            enabled: true,
+            allowExportSelectedData: false,
+        },
+        onExporting: (e) => {
+            const tableName = selector.split("-")[1];
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet(tableName);
+
+            DevExpress.excelExporter.exportDataGrid({
+                component: e.component,
+                worksheet,
+                autoFilterEnabled: true, customizeCell(options) {
+                    const { gridCell, excelCell } = options;
+                    if (gridCell?.cellType === "data" && gridCell?.column?.dataField === "isActive") {
+                        debugger
+                        excelCell.value = gridCell.value ? i18n.common["grid.column.bool.true"] : i18n.common["grid.column.bool.false"];
+                    }
+                }
+            }).then(() => {
+                const pad = (n) => n.toString().padStart(2, "0");
+                const d = new Date();
+                const fileName = `${tableName}_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.xlsx`;
+
+                return workbook.xlsx.writeBuffer().then((buffer) => {
+                    saveAs(new Blob([buffer], { type: "application/octet-stream" }), fileName);
+                });
+            });
+            e.cancel = true;
+        },
         ...overrides
     }).dxDataGrid("instance");
 }
 
-export function attachDxTooltip(targetEl, text, extraOpts) {
+export function createDxTooltip(targetEl, text, extraOpts) {
     if (!targetEl || !text) return;
     const $target = $(targetEl);
 

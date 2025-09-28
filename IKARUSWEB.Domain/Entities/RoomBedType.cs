@@ -23,11 +23,12 @@ namespace IKARUSWEB.Domain.Entities
 
         public RoomBedType Rename(string name) { Name = name; Touch(); return this; }
 
-        public RoomBedType UpdateDetails(string name, string? code, string? description)
+        public RoomBedType UpdateDetails(string name, string? code, string? description, bool isactive)
         {
             Name = name;
             Code = NormalizeCode(code);
             Description = description;
+            IsActive = isactive;
             Touch();
             return this;
         }

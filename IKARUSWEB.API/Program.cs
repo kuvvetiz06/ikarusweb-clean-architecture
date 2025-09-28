@@ -1,4 +1,5 @@
 using FluentValidation;
+using IKARUSWEB.API.Middlewares;
 using IKARUSWEB.API.Transformers;
 using IKARUSWEB.Application.Behaviors;
 using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
@@ -16,7 +17,6 @@ using System.Globalization;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-var supported = new[] { "tr-TR", "en-US" }.Select(c => new CultureInfo(c)).ToArray();
 var jwt = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwt["Key"] ?? "");
 
@@ -24,17 +24,6 @@ var key = Encoding.UTF8.GetBytes(jwt["Key"] ?? "");
 // Localization (system messages)
 builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 
-var rlo = new RequestLocalizationOptions
-{
-    DefaultRequestCulture = new("tr-TR"),
-    SupportedCultures = supported,
-    SupportedUICultures = supported,
-    RequestCultureProviders = new IRequestCultureProvider[] {
-    new QueryStringRequestCultureProvider(),
-    new CookieRequestCultureProvider(),
-    new AcceptLanguageHeaderRequestCultureProvider()
-  }
-};
 
 
 builder.Services
@@ -90,11 +79,16 @@ builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavi
 builder.Services.AddInfrastructure(builder.Configuration);
 
 
-builder.Services.AddTransient<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
 var app = builder.Build();
 
 // RequestLocalization
-app.UseRequestLocalization(rlo);
+app.UseRequestLocalization(o =>
+{
+    var cultures = new[] { "tr", "en" };
+    o.SetDefaultCulture("tr")
+     .AddSupportedCultures(cultures)
+     .AddSupportedUICultures(cultures);
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -113,7 +107,7 @@ if (app.Environment.IsDevelopment())
     await seeder.RunAsync();
 }
 
-app.UseMiddleware<IKARUSWEB.API.Middlewares.ExceptionMiddleware>();
+app.UseMiddleware<ApiExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

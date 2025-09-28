@@ -117,16 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Validation.Tenant.City.Required" xml:space="preserve">
-    <value />
+  <data name="Common.BadRequest" xml:space="preserve">
+    <value>Geçersiz İstek</value>
   </data>
-  <data name="Validation.Tenant.Country.Required" xml:space="preserve">
-    <value />
+  <data name="Common.Conflict" xml:space="preserve">
+    <value>Çakışma</value>
   </data>
-  <data name="Validation.Tenant.Name.MinLength" xml:space="preserve">
-    <value />
+  <data name="Common.NotFound" xml:space="preserve">
+    <value>Bulunamadı</value>
   </data>
-  <data name="Validation.Tenant.Name.Required" xml:space="preserve">
-    <value />
+  <data name="Common.RecordCreated" xml:space="preserve">
+    <value>Kayıt eklendi</value>
+  </data>
+  <data name="Common.RecordDeleted" xml:space="preserve">
+    <value>Kayıt silindi</value>
+  </data>
+  <data name="Common.RecordNotFound" xml:space="preserve">
+    <value>Kayıt bulunamadı</value>
+  </data>
+  <data name="Common.RecordUpdated" xml:space="preserve">
+    <value>Kayıt Güncellendi</value>
+  </data>
+  <data name="Common.Validation" xml:space="preserve">
+    <value>Doğrulama Hatası</value>
   </data>
 </root>

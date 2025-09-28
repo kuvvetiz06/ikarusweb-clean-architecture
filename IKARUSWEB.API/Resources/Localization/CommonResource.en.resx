@@ -117,16 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Validation.Tenant.City.Required" xml:space="preserve">
-    <value>Şehir zorunludur</value>
+  <data name="Common.BadRequest" xml:space="preserve">
+    <value>Bad Request</value>
   </data>
-  <data name="Validation.Tenant.Country.Required" xml:space="preserve">
-    <value>Ülke zorunludur</value>
+  <data name="Common.Conflict" xml:space="preserve">
+    <value>Conflict</value>
   </data>
-  <data name="Validation.Tenant.Name.MinLength" xml:space="preserve">
-    <value>Otel Adı, 2 karakterden büyük veya eşit olmalıdır. 0 karakter girdiniz.</value>
+  <data name="Common.NotFound" xml:space="preserve">
+    <value>Not Found</value>
   </data>
-  <data name="Validation.Tenant.Name.Required" xml:space="preserve">
-    <value>Otel adı zorunludur</value>
+  <data name="Common.RecordCreated" xml:space="preserve">
+    <value>Record created</value>
+  </data>
+  <data name="Common.RecordDeleted" xml:space="preserve">
+    <value>Record deleted</value>
+  </data>
+  <data name="Common.RecordNotFound" xml:space="preserve">
+    <value>Record not found</value>
+  </data>
+  <data name="Common.RecordUpdated" xml:space="preserve">
+    <value>Record updated</value>
+  </data>
+  <data name="Common.Validation" xml:space="preserve">
+    <value>Validation Error</value>
   </data>
 </root>

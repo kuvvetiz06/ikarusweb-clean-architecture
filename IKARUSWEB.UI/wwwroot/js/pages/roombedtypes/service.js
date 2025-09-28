@@ -15,15 +15,15 @@ export const roomBedTypeService = {
         const isUpdate = !!model.id;
         const res = isUpdate ? await this.update(model.id, model) : await this.create(model);
         debugger
-        Swal.fire({ icon: res?.success ? "success" : "error", text: res?.message || (res?.success ? "Başarılı" : "Hata") });
+        Swal.fire({ icon: res?.succeeded ? "success" : "error", text: res?.message || (res?.succeeded ? "Başarılı" : "Hata") });
         return res;
     },
 
     async confirmAndDelete(id) {
         const ok = (await Swal.fire({ icon: "warning", text: "Silmek istediğinize emin misiniz?", showCancelButton: true })).isConfirmed;
-        if (!ok) return { success: false, message: "cancelled" };
+        if (!ok) return { succeeded: false, message: "cancelled" };
         const res = await this.remove(id);
-        Swal.fire({ icon: res?.success ? "success" : "error", text: res?.message || (res?.success ? "Silindi" : "Hata") });
+        Swal.fire({ icon: res?.succeeded ? "success" : "error", text: res?.message || (res?.succeeded ? "Silindi" : "Hata") });
         return res;
     }
 };
