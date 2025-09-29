@@ -1,20 +1,16 @@
-// /wwwroot/js/core/http.js (ESM)
-// Backend (YARP + Session) injects JWT. No client-side auth headers.
-// Centralized SweetAlert + 401 refresh-retry.
-
+// /wwwroot/js/core/http.js
 const axiosRef = window.axios;
-if (!axiosRef) console.error("Axios missing");
-
 const normalize = (resp) =>
     (resp?.data && typeof resp.data === "object")
         ? resp.data
-        : ({ success: true, message: null, data: resp?.data ?? null });
+        : ({ succeeded: true, message: null, data: resp?.data ?? null });
 
+// succeeded ismini standardize ettik
 export const http = axiosRef.create({
     baseURL: "/api",
     timeout: 30000,
     headers: { "X-Requested-With": "XMLHttpRequest" },
-    withCredentials: true // Session + UI cookie her istekte taşınsın
+    withCredentials: true
 });
 
 let authRedirectInFlight = false;
@@ -26,28 +22,16 @@ http.interceptors.response.use(
         const payload = error?.response?.data;
         const message = payload?.message || payload?.title || error?.message || "Beklenmeyen bir hata oluştu.";
 
-        // Session bitti / yetki yok → sadece yönlendir
+        // 401/403 vs → yönlendir (istersen burada da Swal kullanma)
         if ((status === 401 || status === 403 || status === 419 || status === 440) && !authRedirectInFlight) {
             authRedirectInFlight = true;
             const returnUrl = encodeURIComponent(location.pathname + location.search);
-            // İstersen Swal göstermeden direkt yönlendirebilirsin:
-            Swal.fire({ icon: "info", text: i18n.common["swal.session.expired"] })
-                .then(() => { window.location.href = `/account/login?returnUrl=${returnUrl}`; });
-            // NOT: refresh token denemesi yapmıyoruz.
-            return Promise.resolve({ success: false, message, data: null, status });
+            window.location.href = `/account/login?returnUrl=${returnUrl}`;
         }
 
-        // 400 ModelState
-        if (status === 400 && payload?.errors) {
-            const lines = Object.entries(payload.errors)
-                .flatMap(([k, arr]) => (arr || []).map((m) => `${k}: ${m}`));
-            Swal.fire({ icon: "error", html: `<pre style="text-align:left;white-space:pre-wrap">${lines.join("\n")}</pre>` });
-        } else {
-            Swal.fire({ icon: "error", text: message });
-        }
-
+        // Sadece anlamlı bir obje döndür: service.js karar versin
         return Promise.resolve({
-            success: false,
+            succeeded: false,
             message,
             data: null,
             errors: payload?.errors ?? null,
@@ -55,7 +39,6 @@ http.interceptors.response.use(
         });
     }
 );
-
 
 export const get = (url, params = {}, config = {}) => http.get(url, { params, ...config }).then(r => r);
 export const post = (url, data = {}, config = {}) => http.post(url, data, config).then(r => r);

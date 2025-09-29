@@ -2,7 +2,9 @@
 import { buildDxDataStore, createDxGrid, createDxTooltip } from "../../core/dxHelpers.js";
 import { openModal } from "../../core/modal.js";
 import { bindRoomBedTypeForm } from "./formBindings.js";
-import { roomBedTypeService } from "./service.js";
+import { createService } from "../../core/serviceFactory.js";
+
+const roomBedTypeService = createService("roombedtypes");
 
 let grid;
 const loadUrl = roomBedTypeService.dataUrl;
@@ -68,7 +70,7 @@ export function roomBedTypeGrid() {
                             const keys = grid.getSelectedRowKeys();
                             if (!keys.length) return Swal.fire({ icon: "info", text: i18n.common["swal.grid.please.select.row"] });
                             const r = await roomBedTypeService.confirmAndDelete(keys[0]);
-                            if (r?.success) grid.refresh();
+                            if (r?.succeeded) grid.refresh();
                         },
                         onInitialized: (args) => {
                             createDxTooltip(

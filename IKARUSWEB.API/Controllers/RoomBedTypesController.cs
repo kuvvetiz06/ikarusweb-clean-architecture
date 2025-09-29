@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using DevExtreme.AspNet.Data;
 using DevExtreme.AspNet.Mvc;
+using IKARUSWEB.API.Infrastructure.DevExtreme;
 using IKARUSWEB.API.Localization;
 using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Abstractions.Localization;
@@ -104,11 +105,12 @@ namespace IKARUSWEB.API.Controllers
 
         // DevExtreme server-side data
         [HttpGet("data")]
-        public async Task<IActionResult> Data([FromQuery] DataSourceLoadOptions load, CancellationToken ct)
+        [DefaultSort(nameof(RoomBedTypeDto.CreatedAt), true)]
+        public async Task<IActionResult> Data([FromQuery] DataSourceLoadOptions load, CancellationToken ct)        
         {
+              
             var query = _db.RoomBedTypes.AsNoTracking()
                 .Where(x => x.TenantId == _tenant.TenantId)
-                .OrderBy(x => x.Name)
                 .Select(x => new RoomBedTypeDto
                 {
                     Id = x.Id,
@@ -116,9 +118,10 @@ namespace IKARUSWEB.API.Controllers
                     Code = x.Code,
                     Description = x.Description,
                     IsActive = x.IsActive,
+                    CreatedAt = x.CreatedAt,
 
                 });
-
+          
             var result = await DataSourceLoader.LoadAsync(query, load, ct);
             return Ok(result);
         }
