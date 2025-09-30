@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using DevExtreme.AspNet.Data;
+using DevExtreme.AspNet.Data.ResponseModel;
 using DevExtreme.AspNet.Mvc;
 using IKARUSWEB.API.Infrastructure.DevExtreme;
 using IKARUSWEB.API.Localization;
@@ -54,13 +55,11 @@ namespace IKARUSWEB.API.Controllers
 
         // Create (Name, Code, Description)
         [HttpPost]
-        [ProducesResponseType(typeof(RoomBedTypeDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Result<RoomBedTypeDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Create([FromBody] CreateRoomBedTypeCommand cmd, CancellationToken ct)
         {
             var res = await _mediator.Send(cmd, ct);
-            return res.Succeeded ? Ok(Result<RoomBedTypeDto>
-                    .Success(res.Data ?? new RoomBedTypeDto(), _L[MessageCodes.Common.RecordCreated].Value)) : BadRequest(Result<RoomBedTypeDto>.Failure(_L[MessageCodes.Common.Validation].Value));
+            return Ok(res);
         }
 
         [HttpPut("{id:guid}")]
@@ -105,6 +104,7 @@ namespace IKARUSWEB.API.Controllers
 
         // DevExtreme server-side data
         [HttpGet("data")]
+        [ProducesResponseType(typeof(LoadResult), StatusCodes.Status200OK)]
         [DefaultSort(nameof(RoomBedTypeDto.CreatedAt), true)]
         public async Task<IActionResult> Data([FromQuery] DataSourceLoadOptions load, CancellationToken ct)        
         {
