@@ -8,8 +8,10 @@ namespace IKARUSWEB.Application.Abstractions
 {
     public interface ICurrentUser
     {
-        string? UserId { get; }
+        Guid? UserId { get; }
         string? UserName { get; }
         Guid? TenantId { get; } // JWT’de "tenantId" claim’inden okunacak
+
+        public string? TenantName { get; }
     }
 }

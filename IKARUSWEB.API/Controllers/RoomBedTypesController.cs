@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using DevExtreme.AspNet.Data;
 using DevExtreme.AspNet.Data.ResponseModel;
 using DevExtreme.AspNet.Mvc;
@@ -7,7 +6,6 @@ using IKARUSWEB.API.Infrastructure.DevExtreme;
 using IKARUSWEB.API.Localization;
 using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Abstractions.Localization;
-using IKARUSWEB.Application.Common.Results;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.CreateRoomBedType;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.DeleteRoomBedType;
 using IKARUSWEB.Application.Features.RoomBedTypes.Commands.UpdateRoomBedType;
@@ -39,14 +37,11 @@ namespace IKARUSWEB.API.Controllers
 
         // List (basit)
         [HttpGet]
-        [ProducesResponseType(typeof(IReadOnlyList<RoomBedTypeDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> List([FromQuery] string? q, CancellationToken ct)
             => Ok(await _mediator.Send(new ListRoomBedTypesQuery(q), ct));
 
         // Get
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(RoomBedTypeDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(Guid id, CancellationToken ct)
         {
             var dto = await _mediator.Send(new GetRoomBedTypeByIdQuery(id), ct);
@@ -55,17 +50,13 @@ namespace IKARUSWEB.API.Controllers
 
         // Create (Name, Code, Description)
         [HttpPost]
-        [ProducesResponseType(typeof(Result<RoomBedTypeDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Create([FromBody] CreateRoomBedTypeCommand cmd, CancellationToken ct)
-        {
-            var res = await _mediator.Send(cmd, ct);
-            return Ok(res);
-        }
+        public async Task<ActionResult> Create([FromBody] CreateRoomBedTypeCommand cmd, CancellationToken ct)
+
+                   => await _mediator.Send(cmd, ct);
+
+
 
         [HttpPut("{id:guid}")]
-        [ProducesResponseType(typeof(Result<RoomBedTypeDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRoomBedTypeCommand body, CancellationToken ct)
         {
 
@@ -90,11 +81,9 @@ namespace IKARUSWEB.API.Controllers
             return BadRequest(Result<RoomBedTypeDto>.Failure(_L[MessageCodes.Common.BadRequest].Value));
 
         }
-      
+
         // Delete
         [HttpDelete("{id:guid}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
             var res = await _mediator.Send(new DeleteRoomBedTypeCommand(id), ct);
@@ -104,11 +93,10 @@ namespace IKARUSWEB.API.Controllers
 
         // DevExtreme server-side data
         [HttpGet("data")]
-        [ProducesResponseType(typeof(LoadResult), StatusCodes.Status200OK)]
         [DefaultSort(nameof(RoomBedTypeDto.CreatedAt), true)]
-        public async Task<IActionResult> Data([FromQuery] DataSourceLoadOptions load, CancellationToken ct)        
+        public async Task<IActionResult> Data([FromQuery] DataSourceLoadOptions load, CancellationToken ct)
         {
-              
+
             var query = _db.RoomBedTypes.AsNoTracking()
                 .Where(x => x.TenantId == _tenant.TenantId)
                 .Select(x => new RoomBedTypeDto
@@ -121,7 +109,7 @@ namespace IKARUSWEB.API.Controllers
                     CreatedAt = x.CreatedAt,
 
                 });
-          
+
             var result = await DataSourceLoader.LoadAsync(query, load, ct);
             return Ok(result);
         }

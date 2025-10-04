@@ -1,5 +1,4 @@
-﻿using IKARUSWEB.Application.Common.Results;
-using IKARUSWEB.Application.Features.Tenants.Dtos;
+﻿using IKARUSWEB.Application.Features.Tenants.Dtos;
 using MediatR;
 using System;
 using System.Collections.Generic;

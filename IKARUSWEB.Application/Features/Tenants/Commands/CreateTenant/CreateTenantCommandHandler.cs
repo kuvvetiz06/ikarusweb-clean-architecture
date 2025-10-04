@@ -1,15 +1,10 @@
 ﻿using AutoMapper;
 using IKARUSWEB.Application.Abstractions;
 using IKARUSWEB.Application.Abstractions.Repositories;
-using IKARUSWEB.Application.Common.Results;
 using IKARUSWEB.Application.Features.Tenants.Dtos;
 using IKARUSWEB.Domain.Entities;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant
 {

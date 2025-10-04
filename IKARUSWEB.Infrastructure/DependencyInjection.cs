@@ -24,30 +24,6 @@ namespace IKARUSWEB.Infrastructure
             var cs = config.GetConnectionString("DefaultConnection")
                      ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection not found.");
 
-            services.AddIdentityCore<AppUser>(opt =>
-            {
-                opt.User.RequireUniqueEmail = true;
-                opt.Password.RequireNonAlphanumeric = false;
-                opt.Password.RequireUppercase = false;
-            })
-            .AddRoles<IdentityRole<Guid>>()
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddSignInManager();
-
-            services.AddHttpContextAccessor();
-            services.AddScoped<ICurrentUser, CurrentUser>();
-            services.AddScoped<ITenantProvider, CurrentTenant>();
-            services.AddSingleton<IDateTime, SystemDateTime>();
-            services.AddScoped<ITenantRepository, TenantRepository>();            
-            services.AddScoped<AuditingSaveChangesInterceptor>();
-            services.AddScoped<TenantAssignmentInterceptor>();
-
-            services.AddScoped<DevSeeder>();
-
-            services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>()); // SaveChanges için
-
-            services.Configure<tokenOptions.TokenOptions>(config.GetSection("Jwt"));
-            services.AddScoped<ITokenService, JwtTokenService>();
             services.AddDbContext<AppDbContext>((sp, opt) =>
             {
                 opt.UseSqlServer(cs, sql =>
@@ -59,6 +35,31 @@ namespace IKARUSWEB.Infrastructure
                 opt.AddInterceptors(sp.GetRequiredService<AuditingSaveChangesInterceptor>());
                 opt.AddInterceptors(sp.GetRequiredService<TenantAssignmentInterceptor>());
             });
+
+            services.AddIdentityCore<AppUser>(opt =>
+            {
+                opt.User.RequireUniqueEmail = true;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Password.RequireUppercase = false;
+            })
+            .AddRoles<IdentityRole<Guid>>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddSignInManager();
+
+            services.AddHttpContextAccessor();
+            services.AddScoped<ITokenService, JwtTokenService>();
+            services.AddScoped<ICurrentUser, CurrentUser>();
+            services.AddScoped<ITenantProvider, CurrentTenant>();
+            services.AddSingleton<IDateTime, SystemDateTime>();
+            services.AddScoped<ITenantRepository, TenantRepository>();            
+            services.AddScoped<AuditingSaveChangesInterceptor>();
+            services.AddScoped<TenantAssignmentInterceptor>();
+
+            services.AddScoped<DevSeeder>();
+
+            services.Configure<tokenOptions.TokenOptions>(config.GetSection("Jwt"));
+         
+          
 
             //Repositories
             services.AddScoped<IRoomBedTypeReadRepository, RoomBedTypeReadRepository>();

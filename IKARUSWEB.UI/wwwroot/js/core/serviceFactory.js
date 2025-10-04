@@ -1,6 +1,6 @@
 ﻿// /wwwroot/js/core/serviceFactory.js
 import { get, post, put, del } from "./http.js";
-import { showResult } from "./errors.js";
+import { showResult } from "./notification.js";
 
 export function createService(baseUrl) {
     const base = baseUrl.replace(/^\/+|\/+$/g, ""); // trim slashes
