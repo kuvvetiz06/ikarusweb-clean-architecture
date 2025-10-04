@@ -138,6 +138,9 @@
   <data name="Common.RecordUpdated" xml:space="preserve">
     <value>Kayıt Güncellendi</value>
   </data>
+  <data name="Common.UnExpectedError" xml:space="preserve">
+    <value>Beklenmeyen bir hata oluştu</value>
+  </data>
   <data name="Common.Validation" xml:space="preserve">
     <value>Doğrulama Hatası</value>
   </data>

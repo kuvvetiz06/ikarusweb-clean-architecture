@@ -138,6 +138,9 @@
   <data name="Common.RecordUpdated" xml:space="preserve">
     <value>Record updated</value>
   </data>
+  <data name="Common.UnExpectedError" xml:space="preserve">
+    <value>An unexpected error occurred</value>
+  </data>
   <data name="Common.Validation" xml:space="preserve">
     <value>Validation Error</value>
   </data>

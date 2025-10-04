@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace IKARUSWEB.Application.Features.RoomBedTypes.Queries.GetRoomBedTypeById
 {
-    public sealed record GetRoomBedTypeByIdQuery(Guid Id) : IRequest<RoomBedTypeDto?>;
+    public sealed record GetRoomBedTypeByIdQuery(Guid Id) : IRequest<Result<RoomBedTypeDto?>>;
 }

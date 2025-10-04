@@ -1,11 +1,6 @@
-﻿using IKARUSWEB.Application.Common.Results;
-using IKARUSWEB.Application.Features.Tenants.Dtos;
+﻿using IKARUSWEB.Application.Features.Tenants.Dtos;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant
 {

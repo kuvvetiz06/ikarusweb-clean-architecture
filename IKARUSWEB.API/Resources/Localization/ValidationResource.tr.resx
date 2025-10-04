@@ -135,4 +135,10 @@
   <data name="Validation.BadRequest" xml:space="preserve">
     <value>Hatalı İstek</value>
   </data>
+  <data name="RoomBedType.Code.Exits" xml:space="preserve">
+    <value>Bu kod zaten kullanılıyor</value>
+  </data>
+  <data name="RoomBedType.Name.MaxLength" xml:space="preserve">
+    <value>Maksimum {0} karakter</value>
+  </data>
 </root>

@@ -9,23 +9,20 @@ namespace IKARUSWEB.Application.Features.RoomBedTypes.Commands.CreateRoomBedType
     {
         public CreateRoomBedTypeCommandValidator(IRoomBedTypeReadRepository read)
         {
-            RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+            RuleFor(x => x.Name).NotEmpty().WithMessage("RoomBedType.Name.Required").MaximumLength(25).WithMessage("RoomBedType.Name.MaxLength||{MaxLength}");
 
-            RuleFor(x => x.Code)
-                .MaximumLength(32)
-                .Matches("^[A-Za-z0-9_\\-]*$").When(x => !string.IsNullOrWhiteSpace(x.Code))
-                .WithMessage("Code allows letters, digits, '-' and '_'.");
+            RuleFor(x => x.Code).NotEmpty().WithMessage("RoomBedType.Code.Required").MaximumLength(8).WithMessage("RoomBedType.Code.MaxLength");
 
-            RuleFor(x => x.Description).MaximumLength(500);
+            RuleFor(x => x.Description).MaximumLength(150).WithMessage("RoomBedType.Description.MaxLength"); ;
 
             RuleFor(x => x.Name)
                 .MustAsync(async (name, ct) => !await read.ExistsByNameAsync(name, excludeId: null, ct))
-                .WithMessage("Name already exists.");
+                .WithMessage("RoomBedType.Name.Exits");
 
             RuleFor(x => x.Code)
                 .MustAsync(async (code, ct) =>
                     string.IsNullOrWhiteSpace(code) || !await read.ExistsByCodeAsync(code.Trim().ToUpperInvariant(), ct))
-                .WithMessage("Code already exists.");
+                .WithMessage("RoomBedType.Code.Exits");
         }
     }
 }

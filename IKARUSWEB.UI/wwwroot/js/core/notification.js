@@ -1,4 +1,4 @@
-﻿// /wwwroot/js/core/errors.js
+﻿
 export function collectErrors(errorsObj) {
     return Object.entries(errorsObj || {})
         .flatMap(([k, arr]) => (arr || []).map((m) => `${k}: ${m}`));

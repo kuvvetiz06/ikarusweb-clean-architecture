@@ -1,5 +1,4 @@
-﻿using IKARUSWEB.Application.Common.Results;
-using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
+﻿using IKARUSWEB.Application.Features.Tenants.Commands.CreateTenant;
 using IKARUSWEB.Application.Features.Tenants.Dtos;
 using IKARUSWEB.Application.Features.Tenants.Queries.GetTenantById;
 using MediatR;
